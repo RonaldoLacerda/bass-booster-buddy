@@ -295,6 +295,35 @@ function Index() {
               <span className="text-xs text-muted-foreground">Comparar original</span>
               <Switch checked={bypass} onCheckedChange={setBypass} />
             </div>
+            <div className="flex items-center gap-2 rounded-md border border-border bg-secondary/50 p-1">
+              {(["wav", "mp3"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFormat(f)}
+                  className={`rounded px-3 py-1.5 text-xs font-semibold uppercase transition-colors ${
+                    format === f
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+              {format === "mp3" && (
+                <select
+                  value={bitrate}
+                  onChange={(e) => setBitrate(Number(e.target.value))}
+                  className="rounded bg-transparent px-1 py-1.5 font-mono text-xs text-foreground outline-none"
+                  aria-label="Qualidade do MP3"
+                >
+                  {MP3_BITRATES.map((b) => (
+                    <option key={b} value={b} className="bg-secondary text-foreground">
+                      {b} kbps
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
             <Button
               onClick={handleExport}
               disabled={exporting}
@@ -305,7 +334,7 @@ function Index() {
               ) : (
                 <Download className="mr-2 h-4 w-4" />
               )}
-              Exportar WAV
+              Exportar {format === "mp3" ? `MP3 ${bitrate}` : "WAV"}
             </Button>
           </div>
           {inputPeak !== null && (
