@@ -195,13 +195,17 @@ function Index() {
     setExporting(true);
     try {
       const rendered = await renderProcessed(buf, settings);
-      const blob = encodeWav(rendered);
+      const blob = format === "mp3" ? await encodeMp3(rendered, bitrate) : encodeWav(rendered);
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = fileName.replace(/\.[^.]+$/, "") + " - tratado.wav";
+      a.download = `${fileName.replace(/\.[^.]+$/, "")} - tratado.${format}`;
       a.click();
       URL.revokeObjectURL(a.href);
-      toast.success("Áudio tratado exportado em WAV.");
+      toast.success(
+        format === "mp3"
+          ? `Áudio tratado exportado em MP3 ${bitrate} kbps.`
+          : "Áudio tratado exportado em WAV 16 bits.",
+      );
     } catch {
       toast.error("Não foi possível processar este arquivo.");
     } finally {
