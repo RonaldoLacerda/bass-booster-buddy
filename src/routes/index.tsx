@@ -96,7 +96,17 @@ function Index() {
       an.fftSize = 2048;
       an.smoothingTimeConstant = 0.8;
 
-      src.connect(chain.input);
+      // caminho A: mixer de faixas separadas | caminho B: sinal completo
+      const stemGraph = buildStemGraph(ctx, src, stems);
+      const stemBus = ctx.createGain();
+      const directBus = ctx.createGain();
+      stemGraph.output.connect(stemBus);
+      src.connect(directBus);
+      stemBus.gain.value = useStems ? 1 : 0;
+      directBus.gain.value = useStems ? 0 : 1;
+      stemBus.connect(chain.input);
+      directBus.connect(chain.input);
+
       src.connect(dry);
       dry.gain.value = 0;
       chain.output.connect(an);
@@ -107,14 +117,29 @@ function Index() {
       chainRef.current = chain;
       srcRef.current = src;
       dryRef.current = dry;
+      stemGraphRef.current = stemGraph;
+      stemBusRef.current = stemBus;
+      directBusRef.current = directBus;
       setAnalyser(an);
     }
     return ctxRef.current;
-  }, [settings]);
+  }, [settings, stems, useStems]);
 
   useEffect(() => {
     if (chainRef.current && ctxRef.current) updateChain(chainRef.current, settings, ctxRef.current);
   }, [settings]);
+
+  useEffect(() => {
+    if (stemGraphRef.current && ctxRef.current)
+      updateStemGraph(stemGraphRef.current, stems, ctxRef.current);
+  }, [stems]);
+
+  useEffect(() => {
+    const ctx = ctxRef.current;
+    if (!ctx || !stemBusRef.current || !directBusRef.current) return;
+    stemBusRef.current.gain.setTargetAtTime(useStems ? 1 : 0, ctx.currentTime, 0.03);
+    directBusRef.current.gain.setTargetAtTime(useStems ? 0 : 1, ctx.currentTime, 0.03);
+  }, [useStems]);
 
   useEffect(() => {
     const chain = chainRef.current;
@@ -128,6 +153,7 @@ function Index() {
     );
     dry.gain.setTargetAtTime(bypass ? 1 : 0, ctx.currentTime, 0.02);
   }, [bypass, settings.outputGain]);
+
 
   // decodifica o arquivo para exportação e medição
   useEffect(() => {
