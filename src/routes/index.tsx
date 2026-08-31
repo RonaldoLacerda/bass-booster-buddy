@@ -239,7 +239,7 @@ function Index() {
     }
     setExporting(true);
     try {
-      const rendered = await renderProcessed(buf, settings);
+      const rendered = await renderMix(buf, settings, stems, useStems);
       const blob = format === "mp3" ? await encodeMp3(rendered, bitrate) : encodeWav(rendered);
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
