@@ -195,7 +195,10 @@ export function updateChain(chain: Chain, settings: EqSettings, ctx: ChainCtx) {
 }
 
 /** Curva de resposta em dB para desenho do gráfico. */
-export function responseCurve(settings: EqSettings, freqs: Float32Array): Float32Array {
+export function responseCurve(
+  settings: EqSettings,
+  freqs: Float32Array<ArrayBuffer>,
+): Float32Array {
   const out = new Float32Array(freqs.length);
   const ctx = new OfflineAudioContext(1, 1, 48000);
   const mag = new Float32Array(freqs.length);
@@ -206,7 +209,7 @@ export function responseCurve(settings: EqSettings, freqs: Float32Array): Float3
   hp.frequency.value = Math.max(1, settings.highpass);
   hp.Q.value = 0.7;
   hp.getFrequencyResponse(freqs, mag, phase);
-  for (let i = 0; i < out.length; i++) out[i] += 20 * Math.log10(Math.max(mag[i], 1e-6));
+  for (let i = 0; i < out.length; i++) out[i] = out[i]! + 20 * Math.log10(Math.max(mag[i]!, 1e-6));
 
   for (const b of settings.bands) {
     const f = ctx.createBiquadFilter();
@@ -215,9 +218,9 @@ export function responseCurve(settings: EqSettings, freqs: Float32Array): Float3
     f.Q.value = b.q;
     f.gain.value = b.gain;
     f.getFrequencyResponse(freqs, mag, phase);
-    for (let i = 0; i < out.length; i++) out[i] += 20 * Math.log10(Math.max(mag[i], 1e-6));
+    for (let i = 0; i < out.length; i++) out[i] = out[i]! + 20 * Math.log10(Math.max(mag[i]!, 1e-6));
   }
-  for (let i = 0; i < out.length; i++) out[i] += settings.outputGain;
+  for (let i = 0; i < out.length; i++) out[i] = out[i]! + settings.outputGain;
   return out;
 }
 
@@ -239,7 +242,7 @@ export function normalizeBuffer(buffer: AudioBuffer, target: number) {
   for (let c = 0; c < buffer.numberOfChannels; c++) {
     const data = buffer.getChannelData(c);
     for (let i = 0; i < data.length; i++) {
-      const v = Math.abs(data[i]);
+      const v = Math.abs(data[i]!);
       if (v > peak) peak = v;
     }
   }
@@ -248,7 +251,7 @@ export function normalizeBuffer(buffer: AudioBuffer, target: number) {
   if (factor <= 1.0001 && factor >= 0.9999) return;
   for (let c = 0; c < buffer.numberOfChannels; c++) {
     const data = buffer.getChannelData(c);
-    for (let i = 0; i < data.length; i++) data[i] = Math.max(-1, Math.min(1, data[i] * factor));
+    for (let i = 0; i < data.length; i++) data[i] = Math.max(-1, Math.min(1, data[i]! * factor));
   }
 }
 
@@ -257,7 +260,7 @@ export function peakDb(buffer: AudioBuffer): number {
   for (let c = 0; c < buffer.numberOfChannels; c++) {
     const d = buffer.getChannelData(c);
     for (let i = 0; i < d.length; i += 7) {
-      const v = Math.abs(d[i]);
+      const v = Math.abs(d[i]!);
       if (v > peak) peak = v;
     }
   }

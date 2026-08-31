@@ -79,7 +79,7 @@ export function EqCurve({ settings, analyser }: Props) {
           const f = (i / bins.length) * nyquist;
           if (f < MIN_F || f > MAX_F) continue;
           const x = xOf(f);
-          const y = h - (bins[i] / 255) * h * 0.9;
+          const y = h - (bins[i]! / 255) * h * 0.9;
           ctx.lineTo(x, y);
         }
         ctx.lineTo(w, h);
@@ -92,14 +92,14 @@ export function EqCurve({ settings, analyser }: Props) {
 
       // eq curve
       const N = 200;
-      const freqs = new Float32Array(N);
+      const freqs = new Float32Array(N) as Float32Array<ArrayBuffer>;
       for (let i = 0; i < N; i++) freqs[i] = MIN_F * Math.pow(MAX_F / MIN_F, i / (N - 1));
       const curve = responseCurve(settingsRef.current, freqs);
 
       ctx.beginPath();
       for (let i = 0; i < N; i++) {
-        const x = xOf(freqs[i]);
-        const y = yOf(Math.max(-RANGE_DB, Math.min(RANGE_DB, curve[i])));
+        const x = xOf(freqs[i]!);
+        const y = yOf(Math.max(-RANGE_DB, Math.min(RANGE_DB, curve[i]!)));
         i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
       }
       ctx.strokeStyle = accent;
