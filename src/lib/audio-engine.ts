@@ -263,8 +263,21 @@ export function buildChain(ctx: ChainCtx, settings: EqSettings): Chain {
     node = makeup;
   }
   node.connect(gain);
+  let out: AudioNode = gain;
 
-  return { input: hp, output: gain, filters, hp, comp, gain, makeup };
+  if (settings.limiter) {
+    const lim = ctx.createDynamicsCompressor();
+    lim.threshold.value = settings.limiterCeiling ?? -1;
+    lim.ratio.value = 20;
+    lim.knee.value = 0;
+    lim.attack.value = 0.001;
+    lim.release.value = 0.08;
+    out.connect(lim);
+    out = lim;
+  }
+
+  return { input: hp, output: out, filters, hp, comp, gain, makeup };
+
 }
 
 export function updateChain(chain: Chain, settings: EqSettings, ctx: ChainCtx) {
