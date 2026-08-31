@@ -68,6 +68,8 @@ function Index() {
   const [exporting, setExporting] = useState(false);
   const [activePreset, setActivePreset] = useState("culto");
   const [inputPeak, setInputPeak] = useState<number | null>(null);
+  const [format, setFormat] = useState<ExportFormat>("wav");
+  const [bitrate, setBitrate] = useState<number>(320);
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const ctxRef = useRef<AudioContext | null>(null);
