@@ -405,7 +405,7 @@ export function encodeWav(buffer: AudioBuffer): Blob {
 }
 
 export type ExportFormat = "wav" | "mp3";
-export const MP3_BITRATES = [192, 256, 320] as const;
+export const MP3_BITRATES = [128, 192, 256, 320] as const;
 
 /** Codifica o buffer em MP3 (LAME) com o bitrate informado. */
 export async function encodeMp3(buffer: AudioBuffer, bitrate = 320): Promise<Blob> {
