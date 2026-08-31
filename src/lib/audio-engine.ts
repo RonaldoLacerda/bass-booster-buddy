@@ -18,7 +18,10 @@ export type EqSettings = {
   outputGain: number; // dB
   normalize: boolean;
   targetPeak: number; // 0..1
+  limiter?: boolean; // limiter de segurança no fim da cadeia
+  limiterCeiling?: number; // dB (ex.: -1)
 };
+
 
 export const DEFAULT_BANDS: Band[] = [
   { id: "sub", label: "Sub", kind: "lowshelf", freq: 40, gain: 0, q: 0.7 },
@@ -260,8 +263,21 @@ export function buildChain(ctx: ChainCtx, settings: EqSettings): Chain {
     node = makeup;
   }
   node.connect(gain);
+  let out: AudioNode = gain;
 
-  return { input: hp, output: gain, filters, hp, comp, gain, makeup };
+  if (settings.limiter) {
+    const lim = ctx.createDynamicsCompressor();
+    lim.threshold.value = settings.limiterCeiling ?? -1;
+    lim.ratio.value = 20;
+    lim.knee.value = 0;
+    lim.attack.value = 0.001;
+    lim.release.value = 0.08;
+    out.connect(lim);
+    out = lim;
+  }
+
+  return { input: hp, output: out, filters, hp, comp, gain, makeup };
+
 }
 
 export function updateChain(chain: Chain, settings: EqSettings, ctx: ChainCtx) {
@@ -389,7 +405,7 @@ export function encodeWav(buffer: AudioBuffer): Blob {
 }
 
 export type ExportFormat = "wav" | "mp3";
-export const MP3_BITRATES = [192, 256, 320] as const;
+export const MP3_BITRATES = [128, 192, 256, 320] as const;
 
 /** Codifica o buffer em MP3 (LAME) com o bitrate informado. */
 export async function encodeMp3(buffer: AudioBuffer, bitrate = 320): Promise<Blob> {
