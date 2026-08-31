@@ -18,7 +18,10 @@ export type EqSettings = {
   outputGain: number; // dB
   normalize: boolean;
   targetPeak: number; // 0..1
+  limiter?: boolean; // limiter de segurança no fim da cadeia
+  limiterCeiling?: number; // dB (ex.: -1)
 };
+
 
 export const DEFAULT_BANDS: Band[] = [
   { id: "sub", label: "Sub", kind: "lowshelf", freq: 40, gain: 0, q: 0.7 },
