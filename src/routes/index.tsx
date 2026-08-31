@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { Toaster } from "@/components/ui/sonner";
 import { Fader } from "@/components/Fader";
 import { EqCurve } from "@/components/EqCurve";
+import { StemMixer } from "@/components/StemMixer";
 import {
   DEFAULT_SETTINGS,
   MP3_BITRATES,
@@ -27,13 +28,21 @@ import {
   encodeWav,
   formatTime,
   peakDb,
-  renderProcessed,
   updateChain,
   type Chain,
   type EqSettings,
   type ExportFormat,
 } from "@/lib/audio-engine";
+import {
+  DEFAULT_STEMS,
+  buildStemGraph,
+  renderMix,
+  updateStemGraph,
+  type StemGraph,
+  type StemSettings,
+} from "@/lib/stems-engine";
 import demoAudio from "@/assets/vigilia.mp3.asset.json";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -70,14 +79,24 @@ function Index() {
   const [inputPeak, setInputPeak] = useState<number | null>(null);
   const [format, setFormat] = useState<ExportFormat>("wav");
   const [bitrate, setBitrate] = useState<number>(320);
+  const [stems, setStems] = useState<StemSettings[]>(DEFAULT_STEMS);
+  const [useStems, setUseStems] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const ctxRef = useRef<AudioContext | null>(null);
   const chainRef = useRef<Chain | null>(null);
   const srcRef = useRef<MediaElementAudioSourceNode | null>(null);
   const dryRef = useRef<GainNode | null>(null);
+  const stemGraphRef = useRef<StemGraph | null>(null);
+  const stemBusRef = useRef<GainNode | null>(null);
+  const directBusRef = useRef<GainNode | null>(null);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
   const bufferRef = useRef<AudioBuffer | null>(null);
+
+  const updateStem = useCallback((id: string, patch: Partial<StemSettings>) => {
+    setStems((list) => list.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+  }, []);
+
 
   // aplica o preset inicial
   useEffect(() => {
@@ -96,7 +115,17 @@ function Index() {
       an.fftSize = 2048;
       an.smoothingTimeConstant = 0.8;
 
-      src.connect(chain.input);
+      // caminho A: mixer de faixas separadas | caminho B: sinal completo
+      const stemGraph = buildStemGraph(ctx, src, stems);
+      const stemBus = ctx.createGain();
+      const directBus = ctx.createGain();
+      stemGraph.output.connect(stemBus);
+      src.connect(directBus);
+      stemBus.gain.value = useStems ? 1 : 0;
+      directBus.gain.value = useStems ? 0 : 1;
+      stemBus.connect(chain.input);
+      directBus.connect(chain.input);
+
       src.connect(dry);
       dry.gain.value = 0;
       chain.output.connect(an);
@@ -107,14 +136,29 @@ function Index() {
       chainRef.current = chain;
       srcRef.current = src;
       dryRef.current = dry;
+      stemGraphRef.current = stemGraph;
+      stemBusRef.current = stemBus;
+      directBusRef.current = directBus;
       setAnalyser(an);
     }
     return ctxRef.current;
-  }, [settings]);
+  }, [settings, stems, useStems]);
 
   useEffect(() => {
     if (chainRef.current && ctxRef.current) updateChain(chainRef.current, settings, ctxRef.current);
   }, [settings]);
+
+  useEffect(() => {
+    if (stemGraphRef.current && ctxRef.current)
+      updateStemGraph(stemGraphRef.current, stems, ctxRef.current);
+  }, [stems]);
+
+  useEffect(() => {
+    const ctx = ctxRef.current;
+    if (!ctx || !stemBusRef.current || !directBusRef.current) return;
+    stemBusRef.current.gain.setTargetAtTime(useStems ? 1 : 0, ctx.currentTime, 0.03);
+    directBusRef.current.gain.setTargetAtTime(useStems ? 0 : 1, ctx.currentTime, 0.03);
+  }, [useStems]);
 
   useEffect(() => {
     const chain = chainRef.current;
@@ -128,6 +172,7 @@ function Index() {
     );
     dry.gain.setTargetAtTime(bypass ? 1 : 0, ctx.currentTime, 0.02);
   }, [bypass, settings.outputGain]);
+
 
   // decodifica o arquivo para exportação e medição
   useEffect(() => {
@@ -194,7 +239,7 @@ function Index() {
     }
     setExporting(true);
     try {
-      const rendered = await renderProcessed(buf, settings);
+      const rendered = await renderMix(buf, settings, stems, useStems);
       const blob = format === "mp3" ? await encodeMp3(rendered, bitrate) : encodeWav(rendered);
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
@@ -416,6 +461,30 @@ function Index() {
             Soma das bandas: {gainSum > 0 ? "+" : ""}
             {gainSum.toFixed(1)} dB
           </p>
+        </section>
+
+        {/* Mixer de faixas */}
+        <section className="panel p-5">
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 className="text-sm font-semibold uppercase tracking-wider">
+                Mixer por instrumento
+              </h2>
+              <p className="mt-1 max-w-xl text-xs text-muted-foreground">
+                Separação por faixas de frequência e imagem estéreo (centro/laterais) direto no
+                navegador. Cada faixa tem volume, mute/solo, saída geral, mono, só L ou só R, EQ e
+                compressor próprios. O isolamento é aproximado — instrumentos que compartilham a
+                mesma região aparecem em mais de uma faixa.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 rounded-md border border-border bg-secondary/50 px-3 py-2">
+              <span className="text-xs text-muted-foreground">Ativar mixer</span>
+              <Switch checked={useStems} onCheckedChange={setUseStems} />
+            </div>
+          </div>
+          <div className={useStems ? "" : "pointer-events-none opacity-50"}>
+            <StemMixer stems={stems} onChange={updateStem} />
+          </div>
         </section>
 
         {/* Dinâmica */}
