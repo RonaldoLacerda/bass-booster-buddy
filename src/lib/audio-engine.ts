@@ -21,14 +21,18 @@ export type EqSettings = {
 };
 
 export const DEFAULT_BANDS: Band[] = [
-  { id: "sub", label: "Sub", kind: "lowshelf", freq: 60, gain: 0, q: 0.7 },
-  { id: "bass", label: "Grave", kind: "peaking", freq: 120, gain: 0, q: 1 },
+  { id: "sub", label: "Sub", kind: "lowshelf", freq: 40, gain: 0, q: 0.7 },
+  { id: "low", label: "Grave profundo", kind: "peaking", freq: 80, gain: 0, q: 1 },
+  { id: "bass", label: "Grave", kind: "peaking", freq: 150, gain: 0, q: 1 },
   { id: "lowmid", label: "Médio-grave", kind: "peaking", freq: 300, gain: 0, q: 1 },
-  { id: "mid", label: "Médio", kind: "peaking", freq: 900, gain: 0, q: 1 },
+  { id: "mid", label: "Médio", kind: "peaking", freq: 600, gain: 0, q: 1 },
+  { id: "upmid", label: "Médio alto", kind: "peaking", freq: 1200, gain: 0, q: 1 },
   { id: "himid", label: "Médio-agudo", kind: "peaking", freq: 2500, gain: 0, q: 1 },
-  { id: "pres", label: "Presença", kind: "peaking", freq: 5000, gain: 0, q: 1 },
-  { id: "air", label: "Brilho", kind: "highshelf", freq: 10000, gain: 0, q: 0.7 },
+  { id: "pres", label: "Presença", kind: "peaking", freq: 4500, gain: 0, q: 1 },
+  { id: "sib", label: "Agudo", kind: "peaking", freq: 8000, gain: 0, q: 1 },
+  { id: "air", label: "Brilho", kind: "highshelf", freq: 12000, gain: 0, q: 0.7 },
 ];
+
 
 export const DEFAULT_SETTINGS: EqSettings = {
   bands: DEFAULT_BANDS,
@@ -60,7 +64,7 @@ export const PRESETS: Preset[] = [
     name: "Culto ao vivo",
     description: "Corpo, corte de sujeira e clareza na voz",
     apply: (s) => ({
-      ...withBands(s, { sub: 3, bass: 4, lowmid: -3, mid: 0, himid: 2, pres: 3, air: 2 }),
+      ...withBands(s, { sub: 3, low: 3, bass: 4, lowmid: -3, mid: -1, upmid: 1, himid: 2, pres: 3, sib: 2, air: 2 }),
       highpass: 40,
       compressor: true,
       threshold: -20,
@@ -73,7 +77,7 @@ export const PRESETS: Preset[] = [
     name: "Baixo em destaque",
     description: "Reforça fundamental e ataque do contrabaixo",
     apply: (s) => ({
-      ...withBands(s, { sub: 5, bass: 6, lowmid: -2, mid: 1, himid: 3, pres: 1, air: 0 }),
+      ...withBands(s, { sub: 4, low: 6, bass: 5, lowmid: -2, mid: 0, upmid: 2, himid: 3, pres: 1, sib: 0, air: 0 }),
       highpass: 28,
       compressor: true,
       threshold: -22,
@@ -86,7 +90,7 @@ export const PRESETS: Preset[] = [
     name: "Grave pesado",
     description: "Máximo peso nos sub-graves",
     apply: (s) => ({
-      ...withBands(s, { sub: 8, bass: 7, lowmid: -4, mid: 0, himid: 1, pres: 2, air: 3 }),
+      ...withBands(s, { sub: 8, low: 7, bass: 5, lowmid: -4, mid: -2, upmid: 0, himid: 1, pres: 2, sib: 2, air: 3 }),
       highpass: 25,
       compressor: true,
       threshold: -24,
@@ -99,7 +103,7 @@ export const PRESETS: Preset[] = [
     name: "Voz / pregação",
     description: "Inteligibilidade da palavra falada",
     apply: (s) => ({
-      ...withBands(s, { sub: -4, bass: 0, lowmid: -3, mid: 2, himid: 4, pres: 4, air: 2 }),
+      ...withBands(s, { sub: -6, low: -3, bass: 0, lowmid: -3, mid: 1, upmid: 3, himid: 4, pres: 4, sib: 2, air: 1 }),
       highpass: 80,
       compressor: true,
       threshold: -20,
@@ -112,7 +116,7 @@ export const PRESETS: Preset[] = [
     name: "Volume máximo",
     description: "Compressão forte para áudio muito baixo",
     apply: (s) => ({
-      ...withBands(s, { sub: 2, bass: 3, lowmid: -2, mid: 1, himid: 2, pres: 2, air: 1 }),
+      ...withBands(s, { sub: 2, low: 3, bass: 3, lowmid: -2, mid: 0, upmid: 1, himid: 2, pres: 2, sib: 1, air: 1 }),
       highpass: 35,
       compressor: true,
       threshold: -28,
@@ -121,7 +125,88 @@ export const PRESETS: Preset[] = [
       normalize: true,
     }),
   },
+  {
+    id: "banda",
+    name: "Banda completa",
+    description: "Curva sorriso equilibrada para louvor com banda",
+    apply: (s) => ({
+      ...withBands(s, { sub: 3, low: 4, bass: 2, lowmid: -3, mid: -2, upmid: 0, himid: 2, pres: 3, sib: 3, air: 4 }),
+      highpass: 32,
+      compressor: true,
+      threshold: -22,
+      ratio: 3.5,
+      normalize: true,
+    }),
+  },
+  {
+    id: "celular",
+    name: "Celular / caixinha",
+    description: "Traz o grave aparente em alto-falantes pequenos",
+    apply: (s) => ({
+      ...withBands(s, { sub: -3, low: 0, bass: 3, lowmid: 1, mid: 2, upmid: 4, himid: 4, pres: 3, sib: 1, air: 0 }),
+      highpass: 60,
+      compressor: true,
+      threshold: -24,
+      ratio: 5,
+      outputGain: 2,
+      normalize: true,
+    }),
+  },
+  {
+    id: "podcast",
+    name: "Pregação limpa",
+    description: "Sem chiado nem estouro, ideal para YouTube",
+    apply: (s) => ({
+      ...withBands(s, { sub: -8, low: -4, bass: 1, lowmid: -2, mid: 1, upmid: 2, himid: 3, pres: 2, sib: -2, air: 0 }),
+      highpass: 90,
+      compressor: true,
+      threshold: -26,
+      ratio: 5,
+      outputGain: 2,
+      normalize: true,
+    }),
+  },
+  {
+    id: "ensaio",
+    name: "Ensaio cru",
+    description: "Só limpeza e nivelamento suave, sem colorir",
+    apply: (s) => ({
+      ...withBands(s, { sub: 0, low: 1, bass: 1, lowmid: -1, mid: 0, upmid: 0, himid: 1, pres: 1, sib: 0, air: 1 }),
+      highpass: 30,
+      compressor: true,
+      threshold: -16,
+      ratio: 2,
+      normalize: true,
+    }),
+  },
+  {
+    id: "bateria",
+    name: "Bateria e peso",
+    description: "Ataque do bumbo e brilho dos pratos",
+    apply: (s) => ({
+      ...withBands(s, { sub: 4, low: 5, bass: 1, lowmid: -4, mid: -2, upmid: 1, himid: 3, pres: 4, sib: 4, air: 3 }),
+      highpass: 28,
+      compressor: true,
+      threshold: -22,
+      ratio: 4,
+      normalize: true,
+    }),
+  },
+  {
+    id: "acustico",
+    name: "Voz e violão",
+    description: "Naturalidade com corpo e brilho de cordas",
+    apply: (s) => ({
+      ...withBands(s, { sub: -4, low: 0, bass: 2, lowmid: -2, mid: 0, upmid: 1, himid: 2, pres: 3, sib: 3, air: 3 }),
+      highpass: 55,
+      compressor: true,
+      threshold: -18,
+      ratio: 2.5,
+      normalize: true,
+    }),
+  },
 ];
+
 
 type ChainCtx = BaseAudioContext;
 
