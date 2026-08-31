@@ -20,8 +20,10 @@ import { Fader } from "@/components/Fader";
 import { EqCurve } from "@/components/EqCurve";
 import {
   DEFAULT_SETTINGS,
+  MP3_BITRATES,
   PRESETS,
   buildChain,
+  encodeMp3,
   encodeWav,
   formatTime,
   peakDb,
@@ -29,6 +31,7 @@ import {
   updateChain,
   type Chain,
   type EqSettings,
+  type ExportFormat,
 } from "@/lib/audio-engine";
 import demoAudio from "@/assets/vigilia.mp3.asset.json";
 
@@ -65,6 +68,8 @@ function Index() {
   const [exporting, setExporting] = useState(false);
   const [activePreset, setActivePreset] = useState("culto");
   const [inputPeak, setInputPeak] = useState<number | null>(null);
+  const [format, setFormat] = useState<ExportFormat>("wav");
+  const [bitrate, setBitrate] = useState<number>(320);
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const ctxRef = useRef<AudioContext | null>(null);
@@ -190,13 +195,17 @@ function Index() {
     setExporting(true);
     try {
       const rendered = await renderProcessed(buf, settings);
-      const blob = encodeWav(rendered);
+      const blob = format === "mp3" ? await encodeMp3(rendered, bitrate) : encodeWav(rendered);
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = fileName.replace(/\.[^.]+$/, "") + " - tratado.wav";
+      a.download = `${fileName.replace(/\.[^.]+$/, "")} - tratado.${format}`;
       a.click();
       URL.revokeObjectURL(a.href);
-      toast.success("Áudio tratado exportado em WAV.");
+      toast.success(
+        format === "mp3"
+          ? `Áudio tratado exportado em MP3 ${bitrate} kbps.`
+          : "Áudio tratado exportado em WAV 16 bits.",
+      );
     } catch {
       toast.error("Não foi possível processar este arquivo.");
     } finally {
@@ -286,6 +295,35 @@ function Index() {
               <span className="text-xs text-muted-foreground">Comparar original</span>
               <Switch checked={bypass} onCheckedChange={setBypass} />
             </div>
+            <div className="flex items-center gap-2 rounded-md border border-border bg-secondary/50 p-1">
+              {(["wav", "mp3"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFormat(f)}
+                  className={`rounded px-3 py-1.5 text-xs font-semibold uppercase transition-colors ${
+                    format === f
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+              {format === "mp3" && (
+                <select
+                  value={bitrate}
+                  onChange={(e) => setBitrate(Number(e.target.value))}
+                  className="rounded bg-transparent px-1 py-1.5 font-mono text-xs text-foreground outline-none"
+                  aria-label="Qualidade do MP3"
+                >
+                  {MP3_BITRATES.map((b) => (
+                    <option key={b} value={b} className="bg-secondary text-foreground">
+                      {b} kbps
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
             <Button
               onClick={handleExport}
               disabled={exporting}
@@ -296,7 +334,7 @@ function Index() {
               ) : (
                 <Download className="mr-2 h-4 w-4" />
               )}
-              Exportar WAV
+              Exportar {format === "mp3" ? `MP3 ${bitrate}` : "WAV"}
             </Button>
           </div>
           {inputPeak !== null && (
