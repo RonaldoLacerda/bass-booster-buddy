@@ -21,14 +21,18 @@ export type EqSettings = {
 };
 
 export const DEFAULT_BANDS: Band[] = [
-  { id: "sub", label: "Sub", kind: "lowshelf", freq: 60, gain: 0, q: 0.7 },
-  { id: "bass", label: "Grave", kind: "peaking", freq: 120, gain: 0, q: 1 },
+  { id: "sub", label: "Sub", kind: "lowshelf", freq: 40, gain: 0, q: 0.7 },
+  { id: "low", label: "Grave profundo", kind: "peaking", freq: 80, gain: 0, q: 1 },
+  { id: "bass", label: "Grave", kind: "peaking", freq: 150, gain: 0, q: 1 },
   { id: "lowmid", label: "Médio-grave", kind: "peaking", freq: 300, gain: 0, q: 1 },
-  { id: "mid", label: "Médio", kind: "peaking", freq: 900, gain: 0, q: 1 },
+  { id: "mid", label: "Médio", kind: "peaking", freq: 600, gain: 0, q: 1 },
+  { id: "upmid", label: "Médio alto", kind: "peaking", freq: 1200, gain: 0, q: 1 },
   { id: "himid", label: "Médio-agudo", kind: "peaking", freq: 2500, gain: 0, q: 1 },
-  { id: "pres", label: "Presença", kind: "peaking", freq: 5000, gain: 0, q: 1 },
-  { id: "air", label: "Brilho", kind: "highshelf", freq: 10000, gain: 0, q: 0.7 },
+  { id: "pres", label: "Presença", kind: "peaking", freq: 4500, gain: 0, q: 1 },
+  { id: "sib", label: "Agudo", kind: "peaking", freq: 8000, gain: 0, q: 1 },
+  { id: "air", label: "Brilho", kind: "highshelf", freq: 12000, gain: 0, q: 0.7 },
 ];
+
 
 export const DEFAULT_SETTINGS: EqSettings = {
   bands: DEFAULT_BANDS,
