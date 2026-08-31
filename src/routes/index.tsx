@@ -79,14 +79,24 @@ function Index() {
   const [inputPeak, setInputPeak] = useState<number | null>(null);
   const [format, setFormat] = useState<ExportFormat>("wav");
   const [bitrate, setBitrate] = useState<number>(320);
+  const [stems, setStems] = useState<StemSettings[]>(DEFAULT_STEMS);
+  const [useStems, setUseStems] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const ctxRef = useRef<AudioContext | null>(null);
   const chainRef = useRef<Chain | null>(null);
   const srcRef = useRef<MediaElementAudioSourceNode | null>(null);
   const dryRef = useRef<GainNode | null>(null);
+  const stemGraphRef = useRef<StemGraph | null>(null);
+  const stemBusRef = useRef<GainNode | null>(null);
+  const directBusRef = useRef<GainNode | null>(null);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
   const bufferRef = useRef<AudioBuffer | null>(null);
+
+  const updateStem = useCallback((id: string, patch: Partial<StemSettings>) => {
+    setStems((list) => list.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+  }, []);
+
 
   // aplica o preset inicial
   useEffect(() => {
