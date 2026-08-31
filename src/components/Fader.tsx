@@ -32,7 +32,7 @@ export function Fader({ label, sublabel, value, min, max, step = 0.5, onChange, 
         min={min}
         max={max}
         step={step}
-        onValueChange={(v) => onChange(v[0])}
+        onValueChange={(v) => onChange(v[0]!)}
         className="relative flex h-44 w-8 touch-none select-none flex-col items-center justify-center"
       >
         <SliderPrimitive.Track className="relative h-full w-2 grow overflow-hidden rounded-full bg-muted">

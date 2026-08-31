@@ -272,8 +272,8 @@ function Index() {
                   max={duration || 1}
                   step={0.1}
                   onValueChange={(v) => {
-                    if (audioRef.current) audioRef.current.currentTime = v[0];
-                    setCurrent(v[0]);
+                    if (audioRef.current) audioRef.current.currentTime = v[0]!;
+                    setCurrent(v[0]!);
                   }}
                   className="flex-1"
                 />
@@ -394,7 +394,7 @@ function Index() {
                 min={20}
                 max={120}
                 step={1}
-                onValueChange={(v) => setSettings((s) => ({ ...s, highpass: v[0] }))}
+                onValueChange={(v) => setSettings((s) => ({ ...s, highpass: v[0]! }))}
               />
             </Control>
 
@@ -416,7 +416,7 @@ function Index() {
                 max={0}
                 step={1}
                 disabled={!settings.compressor}
-                onValueChange={(v) => setSettings((s) => ({ ...s, threshold: v[0] }))}
+                onValueChange={(v) => setSettings((s) => ({ ...s, threshold: v[0]! }))}
               />
             </Control>
 
@@ -427,7 +427,7 @@ function Index() {
                 max={12}
                 step={0.5}
                 disabled={!settings.compressor}
-                onValueChange={(v) => setSettings((s) => ({ ...s, ratio: v[0] }))}
+                onValueChange={(v) => setSettings((s) => ({ ...s, ratio: v[0]! }))}
               />
             </Control>
           </div>
@@ -456,7 +456,7 @@ function Index() {
                 max={1}
                 step={0.01}
                 disabled={!settings.normalize}
-                onValueChange={(v) => setSettings((s) => ({ ...s, targetPeak: v[0] }))}
+                onValueChange={(v) => setSettings((s) => ({ ...s, targetPeak: v[0]! }))}
               />
             </Control>
 

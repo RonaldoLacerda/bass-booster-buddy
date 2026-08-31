@@ -292,7 +292,7 @@ export function encodeWav(buffer: AudioBuffer): Blob {
   let off = 44;
   for (let i = 0; i < len; i++) {
     for (let c = 0; c < numCh; c++) {
-      const s = Math.max(-1, Math.min(1, chans[c][i]));
+      const s = Math.max(-1, Math.min(1, chans[c]![i]!));
       view.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7fff, true);
       off += 2;
     }
