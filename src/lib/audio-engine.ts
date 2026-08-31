@@ -303,6 +303,42 @@ export function encodeWav(buffer: AudioBuffer): Blob {
   return new Blob([ab], { type: "audio/wav" });
 }
 
+export type ExportFormat = "wav" | "mp3";
+export const MP3_BITRATES = [192, 256, 320] as const;
+
+/** Codifica o buffer em MP3 (LAME) com o bitrate informado. */
+export async function encodeMp3(buffer: AudioBuffer, bitrate = 320): Promise<Blob> {
+  const { Mp3Encoder } = await import("@breezystack/lamejs");
+  const numCh = Math.min(2, buffer.numberOfChannels);
+  const encoder = new Mp3Encoder(numCh, buffer.sampleRate, bitrate);
+
+  const toInt16 = (f: Float32Array) => {
+    const out = new Int16Array(f.length);
+    for (let i = 0; i < f.length; i++) {
+      const s = Math.max(-1, Math.min(1, f[i]!));
+      out[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+    }
+    return out;
+  };
+
+  const left = toInt16(buffer.getChannelData(0));
+  const right = numCh > 1 ? toInt16(buffer.getChannelData(1)) : null;
+
+  const chunks: Uint8Array[] = [];
+  const block = 1152;
+  for (let i = 0; i < left.length; i += block) {
+    const l = left.subarray(i, i + block);
+    const r = right ? right.subarray(i, i + block) : undefined;
+    const buf = right ? encoder.encodeBuffer(l, r!) : encoder.encodeBuffer(l);
+    if (buf.length > 0) chunks.push(new Uint8Array(buf));
+    if (i % (block * 200) === 0) await new Promise((res) => setTimeout(res, 0));
+  }
+  const end = encoder.flush();
+  if (end.length > 0) chunks.push(new Uint8Array(end));
+
+  return new Blob(chunks as BlobPart[], { type: "audio/mpeg" });
+}
+
 export function formatTime(sec: number): string {
   if (!isFinite(sec)) return "0:00";
   const m = Math.floor(sec / 60);
