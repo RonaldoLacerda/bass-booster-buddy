@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { Toaster } from "@/components/ui/sonner";
 import { Fader } from "@/components/Fader";
 import { EqCurve } from "@/components/EqCurve";
+import { StemMixer } from "@/components/StemMixer";
 import {
   DEFAULT_SETTINGS,
   MP3_BITRATES,
@@ -27,13 +28,21 @@ import {
   encodeWav,
   formatTime,
   peakDb,
-  renderProcessed,
   updateChain,
   type Chain,
   type EqSettings,
   type ExportFormat,
 } from "@/lib/audio-engine";
+import {
+  DEFAULT_STEMS,
+  buildStemGraph,
+  renderMix,
+  updateStemGraph,
+  type StemGraph,
+  type StemSettings,
+} from "@/lib/stems-engine";
 import demoAudio from "@/assets/vigilia.mp3.asset.json";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
