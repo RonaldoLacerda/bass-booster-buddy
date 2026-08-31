@@ -20,8 +20,10 @@ import { Fader } from "@/components/Fader";
 import { EqCurve } from "@/components/EqCurve";
 import {
   DEFAULT_SETTINGS,
+  MP3_BITRATES,
   PRESETS,
   buildChain,
+  encodeMp3,
   encodeWav,
   formatTime,
   peakDb,
@@ -29,6 +31,7 @@ import {
   updateChain,
   type Chain,
   type EqSettings,
+  type ExportFormat,
 } from "@/lib/audio-engine";
 import demoAudio from "@/assets/vigilia.mp3.asset.json";
 
