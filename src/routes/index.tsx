@@ -463,6 +463,30 @@ function Index() {
           </p>
         </section>
 
+        {/* Mixer de faixas */}
+        <section className="panel p-5">
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 className="text-sm font-semibold uppercase tracking-wider">
+                Mixer por instrumento
+              </h2>
+              <p className="mt-1 max-w-xl text-xs text-muted-foreground">
+                Separação por faixas de frequência e imagem estéreo (centro/laterais) direto no
+                navegador. Cada faixa tem volume, mute/solo, saída geral, mono, só L ou só R, EQ e
+                compressor próprios. O isolamento é aproximado — instrumentos que compartilham a
+                mesma região aparecem em mais de uma faixa.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 rounded-md border border-border bg-secondary/50 px-3 py-2">
+              <span className="text-xs text-muted-foreground">Ativar mixer</span>
+              <Switch checked={useStems} onCheckedChange={setUseStems} />
+            </div>
+          </div>
+          <div className={useStems ? "" : "pointer-events-none opacity-50"}>
+            <StemMixer stems={stems} onChange={updateStem} />
+          </div>
+        </section>
+
         {/* Dinâmica */}
         <section className="panel grid gap-6 p-5 md:grid-cols-2">
           <div className="space-y-5">
