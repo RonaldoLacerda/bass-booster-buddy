@@ -203,20 +203,24 @@ export function buildGoalSettings(
   }
 
   // Ajustes guiados pelas métricas medidas
+  const bump = (id: string, delta: number) => {
+    gains[id] = (gains[id] ?? 0) + delta;
+  };
   const lowTotal = m.subEnergy + m.bassEnergy;
   if (lowTotal > 0.55) {
-    gains.sub = (gains.sub ?? 0) - 3;
-    gains.low = (gains.low ?? 0) - 2;
-    gains.lowmid = (gains.lowmid ?? 0) - 1;
+    bump("sub", -3);
+    bump("low", -2);
+    bump("lowmid", -1);
   } else if (lowTotal < 0.25) {
-    gains.low = (gains.low ?? 0) + 2;
-    gains.bass = (gains.bass ?? 0) + 1;
+    bump("low", 2);
+    bump("bass", 1);
   }
   if (m.presenceEnergy < 0.14) {
-    gains.himid = (gains.himid ?? 0) + 2;
-    gains.pres = (gains.pres ?? 0) + 2;
+    bump("himid", 2);
+    bump("pres", 2);
   }
-  if (m.highEnergy > 0.35) gains.sib = (gains.sib ?? 0) - 2;
+  if (m.highEnergy > 0.35) bump("sib", -2);
+
 
   let threshold = goal.threshold;
   let ratio = goal.ratio;

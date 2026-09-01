@@ -56,7 +56,7 @@ async function renderFiltered(
   const ctx = new OfflineAudioContext(1, buffer.length, buffer.sampleRate);
   const src = ctx.createBufferSource();
   const mono = ctx.createBuffer(1, buffer.length, buffer.sampleRate);
-  mono.copyToChannel(mixToMono(buffer), 0);
+  mono.copyToChannel(mixToMono(buffer) as Float32Array<ArrayBuffer>, 0);
   src.buffer = mono;
   const { input, output } = make(ctx);
   src.connect(input);
