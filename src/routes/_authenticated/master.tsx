@@ -12,7 +12,7 @@ import { FOCUS, type FocusId, type GoalId, goalById } from "@/lib/goals";
 import { masterAudio, type MasterResult } from "@/lib/mastering";
 import { formatClock } from "@/lib/recorder";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/master")({
   head: () => ({
     meta: [
       { title: "Masterize seu áudio com IA | Audio Master" },

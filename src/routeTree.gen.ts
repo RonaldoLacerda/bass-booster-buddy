@@ -10,43 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as StudioRouteImport } from './routes/studio'
+import { Route as AuthenticatedMasterRouteImport } from './routes/_authenticated/master'
+import { Route as AuthenticatedStudioRouteImport } from './routes/_authenticated/studio'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StudioRoute = StudioRouteImport.update({
-  id: '/studio',
+const AuthenticatedMasterRoute = AuthenticatedMasterRouteImport.update({
+  id: '/_authenticated/master',
+  path: '/master',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedStudioRoute = AuthenticatedStudioRouteImport.update({
+  id: '/_authenticated/studio',
   path: '/studio',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/studio': typeof StudioRoute
+  '/master': typeof AuthenticatedMasterRoute
+  '/studio': typeof AuthenticatedStudioRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/studio': typeof StudioRoute
+  '/master': typeof AuthenticatedMasterRoute
+  '/studio': typeof AuthenticatedStudioRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/studio': typeof StudioRoute
+  '/_authenticated/master': typeof AuthenticatedMasterRoute
+  '/_authenticated/studio': typeof AuthenticatedStudioRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/studio'
+  fullPaths: '/' | '/master' | '/studio'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/studio'
-  id: '__root__' | '/' | '/studio'
+  to: '/' | '/master' | '/studio'
+  id: '__root__' | '/' | '/_authenticated/master' | '/_authenticated/studio'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  StudioRoute: typeof StudioRoute
+  AuthenticatedMasterRoute: typeof AuthenticatedMasterRoute
+  AuthenticatedStudioRoute: typeof AuthenticatedStudioRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,11 +68,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/studio': {
-      id: '/studio'
+    '/_authenticated/master': {
+      id: '/_authenticated/master'
+      path: '/master'
+      fullPath: '/master'
+      preLoaderRoute: typeof AuthenticatedMasterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/studio': {
+      id: '/_authenticated/studio'
       path: '/studio'
       fullPath: '/studio'
-      preLoaderRoute: typeof StudioRouteImport
+      preLoaderRoute: typeof AuthenticatedStudioRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -70,7 +87,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  StudioRoute: StudioRoute,
+  AuthenticatedMasterRoute: AuthenticatedMasterRoute,
+  AuthenticatedStudioRoute: AuthenticatedStudioRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
