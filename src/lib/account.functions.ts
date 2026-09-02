@@ -192,9 +192,28 @@ export const resolvePlanRequest = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Acesso restrito");
     if (!["pendente", "aprovado", "recusado"].includes(data.status)) return { ok: false };
 
-    const { error } = await supabase
+    const { data: row, error } = await supabase
       .from("plan_requests")
       .update({ status: data.status })
-      .eq("id", data.id);
-    return { ok: !error };
+      .eq("id", data.id)
+      .select("user_id, plan_id")
+      .maybeSingle();
+    if (error || !row) return { ok: false };
+
+    if (data.status === "aprovado") {
+      const plan = planById(row.plan_id);
+      if (plan) {
+        const expires = new Date();
+        expires.setUTCMonth(expires.getUTCMonth() + 1);
+        await supabase.from("subscriptions").insert({
+          user_id: row.user_id,
+          plan_id: plan.id,
+          tracks_limit: plan.tracks,
+          status: "active",
+          expires_at: expires.toISOString(),
+        });
+      }
+    }
+
+    return { ok: true };
   });
