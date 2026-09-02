@@ -1,0 +1,306 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Loader2, RotateCcw, Sliders, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { GoalPicker } from "@/components/master/GoalPicker";
+import { DiagnosisCard } from "@/components/master/DiagnosisCard";
+import { AbPlayer } from "@/components/master/AbPlayer";
+import { ExportCard } from "@/components/master/ExportCard";
+import { analyzeBuffer, type AudioMetrics } from "@/lib/analysis";
+import { diagnose, focusInsight, type Diagnosis } from "@/lib/diagnosis";
+import { FOCUS, type FocusId, type GoalId, goalById } from "@/lib/goals";
+import { masterAudio, type MasterResult } from "@/lib/mastering";
+import { formatClock } from "@/lib/recorder";
+
+export const Route = createFileRoute("/_authenticated/master")({
+  head: () => ({
+    meta: [
+      { title: "Masterize seu áudio com IA | Audio Master" },
+      {
+        name: "description",
+        content:
+          "Envie a gravação do culto, da pregação ou do louvor e receba um diagnóstico técnico real (LUFS, picos, graves) com correção automática de volume, grave e clareza. Tudo no seu navegador.",
+      },
+      { property: "og:title", content: "Masterize seu áudio com IA" },
+      {
+        property: "og:description",
+        content:
+          "Diagnóstico automático e masterização de gravações de culto, pregação e louvor — volume, graves e clareza corrigidos em segundos.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: Home,
+});
+
+type Stage = "upload" | "goal" | "diagnosis" | "result";
+
+function Home() {
+  const [stage, setStage] = useState<Stage>("upload");
+  const [fileName, setFileName] = useState("");
+  const [originalUrl, setOriginalUrl] = useState<string | null>(null);
+  const [buffer, setBuffer] = useState<AudioBuffer | null>(null);
+  const [metrics, setMetrics] = useState<AudioMetrics | null>(null);
+  const [goal, setGoal] = useState<GoalId | null>(null);
+  const [focus, setFocus] = useState<FocusId>("none");
+  const [diagnosis, setDiagnosis] = useState<Diagnosis | null>(null);
+  const [master, setMaster] = useState<MasterResult | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const urlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (urlRef.current) URL.revokeObjectURL(urlRef.current);
+    };
+  }, []);
+
+  const reset = () => {
+    if (urlRef.current) URL.revokeObjectURL(urlRef.current);
+    urlRef.current = null;
+    setOriginalUrl(null);
+    setBuffer(null);
+    setMetrics(null);
+    setDiagnosis(null);
+    setMaster(null);
+    setGoal(null);
+    setFocus("none");
+    setFileName("");
+    setError(null);
+    setStage("upload");
+  };
+
+  const handleFile = useCallback(async (file: File) => {
+    setError(null);
+    setAnalyzing(true);
+    setFileName(file.name.replace(/\.[^.]+$/, ""));
+    try {
+      const ab = await file.arrayBuffer();
+      const ctx = new OfflineAudioContext(2, 1, 48000);
+      const decoded = await ctx.decodeAudioData(ab);
+      const m = await analyzeBuffer(decoded);
+      if (urlRef.current) URL.revokeObjectURL(urlRef.current);
+      const url = URL.createObjectURL(file);
+      urlRef.current = url;
+      setOriginalUrl(url);
+      setBuffer(decoded);
+      setMetrics(m);
+      setStage("goal");
+    } catch {
+      setError("Não conseguimos ler esse arquivo. Tente um MP3, WAV, M4A ou OGG.");
+    } finally {
+      setAnalyzing(false);
+    }
+  }, []);
+
+  const chooseGoal = (id: GoalId) => {
+    setGoal(id);
+    if (metrics) {
+      setDiagnosis(diagnose(metrics, goalById(id)));
+      setMaster(null);
+      setStage("diagnosis");
+    }
+  };
+
+  const process = async () => {
+    if (!buffer || !metrics || !goal) return;
+    setProcessing(true);
+    setError(null);
+    try {
+      const result = await masterAudio(buffer, metrics, goal, focus, fileName);
+      setMaster(result);
+      setStage("result");
+    } catch {
+      setError("Falha ao processar o áudio. Tente novamente com um arquivo menor.");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const changeFocus = async (id: FocusId) => {
+    setFocus(id);
+    if (!buffer || !metrics || !goal) return;
+    setProcessing(true);
+    try {
+      setMaster(await masterAudio(buffer, metrics, goal, id, fileName));
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const insight = metrics ? focusInsight(metrics, focus) : null;
+
+  return (
+    <main className="mx-auto max-w-5xl px-4 py-10">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-[var(--font-display,inherit)] text-3xl font-bold tracking-tight sm:text-4xl">
+            Masterize seu áudio com IA
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            Feito para gravações de culto, pregação e louvor. Analisamos seu arquivo, mostramos o que está
+            errado e corrigimos volume, grave e clareza — tudo dentro do seu navegador, sem enviar nada.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          {stage !== "upload" && (
+            <Button variant="outline" size="sm" onClick={reset}>
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Novo áudio
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/studio">
+              <Sliders className="mr-2 h-4 w-4" />
+              Modo avançado
+            </Link>
+          </Button>
+        </div>
+      </header>
+
+      {error && (
+        <p className="mt-6 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
+        </p>
+      )}
+
+      {stage === "upload" && (
+        <section className="mt-8">
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragging(false);
+              const f = e.dataTransfer.files[0];
+              if (f) void handleFile(f);
+            }}
+            onClick={() => inputRef.current?.click()}
+            className={`panel flex cursor-pointer flex-col items-center justify-center gap-3 border border-dashed p-14 text-center transition-colors ${
+              dragging ? "border-accent bg-accent/10" : "border-border"
+            }`}
+          >
+            {analyzing ? (
+              <>
+                <Loader2 className="h-8 w-8 animate-spin text-accent" />
+                <p className="font-semibold">Analisando seu áudio...</p>
+                <p className="text-xs text-muted-foreground">
+                  Medindo volume, picos, graves, dinâmica e estéreo
+                </p>
+              </>
+            ) : (
+              <>
+                <Upload className="h-8 w-8 text-accent" />
+                <p className="font-semibold">Arraste seu áudio aqui ou clique para escolher</p>
+                <p className="text-xs text-muted-foreground">MP3, WAV, M4A ou OGG — processado localmente</p>
+              </>
+            )}
+          </div>
+          <input
+            ref={inputRef}
+            type="file"
+            accept="audio/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void handleFile(f);
+            }}
+          />
+        </section>
+      )}
+
+      {metrics && stage !== "upload" && (
+        <p className="mt-8 text-xs text-muted-foreground">
+          <span className="font-semibold text-foreground">{fileName}</span> · {formatClock(metrics.duration)} ·{" "}
+          {metrics.channels > 1 ? "estéreo" : "mono"} · {(metrics.sampleRate / 1000).toFixed(1)} kHz
+        </p>
+      )}
+
+      {stage !== "upload" && (
+        <section className="mt-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            🎯 Onde esse áudio vai ser ouvido?
+          </h2>
+          <div className="mt-3">
+            <GoalPicker value={goal} onChange={chooseGoal} />
+          </div>
+        </section>
+      )}
+
+      {diagnosis && metrics && stage !== "upload" && stage !== "goal" && (
+        <div className="mt-8">
+          <DiagnosisCard
+            diagnosis={diagnosis}
+            metrics={metrics}
+            onProcess={process}
+            processing={processing}
+          />
+        </div>
+      )}
+
+      {stage === "result" && master && metrics && originalUrl && (
+        <div className="mt-8 space-y-6">
+          <AbPlayer
+            originalUrl={originalUrl}
+            processed={master.buffer}
+            before={metrics}
+            after={master.metrics}
+          />
+
+          <section className="panel p-5">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              🎸 Destacar um instrumento
+            </h2>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {FOCUS.map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => void changeFocus(f.id)}
+                  disabled={processing}
+                  className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                    focus === f.id
+                      ? "border-accent bg-accent/15 text-accent"
+                      : "border-border text-muted-foreground hover:border-accent/60"
+                  }`}
+                >
+                  {f.emoji} {f.name}
+                </button>
+              ))}
+            </div>
+            {insight && (
+              <div className="mt-4 space-y-2 rounded-lg bg-[var(--surface-sunken)] p-4 text-sm">
+                <p>
+                  <span className="font-semibold">O que encontramos:</span> {insight.finding}
+                </p>
+                <p className="text-muted-foreground">{insight.suggestion}</p>
+                <p className="text-xs text-muted-foreground">
+                  {FOCUS.find((f) => f.id === focus)?.explanation}
+                </p>
+              </div>
+            )}
+            {processing && (
+              <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Reprocessando com o novo foco...
+              </p>
+            )}
+          </section>
+
+          <ExportCard buffer={master.buffer} baseName={fileName || "audio-masterizado"} />
+
+          <p className="text-xs text-muted-foreground">
+            Ganho aplicado na normalização: {master.gainApplied >= 0 ? "+" : ""}
+            {master.gainApplied.toFixed(1)} dB · Alvo do objetivo: {goal ? goalById(goal).targetLufs : 0} LUFS ·
+            Teto: {goal ? goalById(goal).ceiling : 0} dBTP
+          </p>
+        </div>
+      )}
+    </main>
+  );
+}
