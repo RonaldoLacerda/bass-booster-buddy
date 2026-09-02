@@ -52,7 +52,7 @@ import demoAudio from "@/assets/vigilia.mp3.asset.json";
 
 type InputMode = "file" | "mic";
 
-export const Route = createFileRoute("/studio")({
+export const Route = createFileRoute("/_authenticated/studio")({
   head: () => ({
     meta: [
       { title: "Equalizador e Gravador de Áudio | Mesa de Culto" },
