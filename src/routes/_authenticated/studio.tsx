@@ -386,6 +386,7 @@ function Index() {
       toast.error("Áudio ainda carregando, tente em alguns segundos.");
       return;
     }
+    if (!(await ensureQuota())) return;
     setExporting(true);
     try {
       const rendered = await renderProcessed(buf, settings);
