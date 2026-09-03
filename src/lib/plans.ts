@@ -22,7 +22,7 @@ export const PLANS: Plan[] = [
   {
     id: "banda",
     name: "Banda",
-    price: 34.99,
+    price: 16.99,
     tracks: 12,
     highlight: true,
     perks: ["Até 12 faixas por mês", "Foco por instrumento", "Modo avançado (EQ 10 bandas)"],
