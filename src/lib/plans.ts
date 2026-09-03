@@ -30,7 +30,7 @@ export const PLANS: Plan[] = [
   {
     id: "estudio",
     name: "Estúdio",
-    price: 49.99,
+    price: 22.99,
     tracks: 30,
     perks: ["Até 30 faixas por mês", "Gravação ao vivo processada", "Presets personalizados"],
   },
