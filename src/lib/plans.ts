@@ -15,7 +15,7 @@ export const PLANS: Plan[] = [
   {
     id: "essencial",
     name: "Essencial",
-    price: 29.99,
+    price: 12.99,
     tracks: 7,
     perks: ["Até 7 faixas por mês", "Diagnóstico automático", "Exportação WAV e MP3 320 kbps"],
   },
