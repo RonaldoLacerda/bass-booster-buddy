@@ -91,6 +91,31 @@ function Index() {
   const [inputPeak, setInputPeak] = useState<number | null>(null);
   const [format, setFormat] = useState<ExportFormat>("wav");
   const [bitrate, setBitrate] = useState<number>(320);
+  const [paid, setPaid] = useState(false);
+
+  const {
+    data: account,
+    refetch: refetchAccount,
+  } = useQuery({ queryKey: ["account"], queryFn: () => getAccount() });
+  const spendTrack = useServerFn(consumeTrack);
+  const blocked = account ? account.remaining <= 0 && !paid : false;
+
+  const ensureQuota = async () => {
+    if (paid) return true;
+    if (account && account.remaining <= 0) {
+      toast.error("Seu limite de faixas acabou. Escolha um plano para continuar.");
+      return false;
+    }
+    const res = await spendTrack({ data: { fileName, goalId: "studio" } });
+    void refetchAccount();
+    if (!res.ok) {
+      toast.error(res.reason ?? "Limite de faixas atingido.");
+      return false;
+    }
+    setPaid(true);
+    return true;
+  };
+
 
   const [customPresets, setCustomPresets] = useState<CustomPreset[]>([]);
   const [presetName, setPresetName] = useState("");
