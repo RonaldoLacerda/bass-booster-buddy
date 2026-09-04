@@ -409,6 +409,7 @@ function Index() {
       toast.error("Grave algo antes de exportar.");
       return;
     }
+    if (!(await ensureQuota())) return;
     setTakeExporting(true);
     try {
       if (settings.normalize) normalizeBuffer(buf, settings.targetPeak);
@@ -439,8 +440,10 @@ function Index() {
         className="hidden"
       />
 
+      <AppNav />
+
       <header className="border-b border-border/60">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-5">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-5">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[image:var(--gradient-accent)] text-accent-foreground">
               <Waves className="h-5 w-5" />
@@ -452,21 +455,52 @@ function Index() {
               </p>
             </div>
           </div>
-          <label className="cursor-pointer">
-            <input
-              type="file"
-              accept="audio/*"
-              className="hidden"
-              onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
-            />
-            <span className="inline-flex items-center gap-2 rounded-md border border-border bg-secondary px-3 py-2 text-sm font-medium transition-colors hover:bg-muted">
-              <Upload className="h-4 w-4" /> Carregar áudio
-            </span>
-          </label>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/master">
+                <RotateCcw className="mr-2 h-4 w-4" /> Voltar ao modo simples
+              </Link>
+            </Button>
+            <label className="cursor-pointer">
+              <input
+                type="file"
+                accept="audio/*"
+                className="hidden"
+                onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
+              />
+              <span className="inline-flex items-center gap-2 rounded-md border border-border bg-secondary px-3 py-2 text-sm font-medium transition-colors hover:bg-muted">
+                <Upload className="h-4 w-4" /> Carregar áudio
+              </span>
+            </label>
+          </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl space-y-6 px-5 py-8">
+        {account && (
+          <section className="panel flex flex-wrap items-center justify-between gap-3 p-4 text-sm">
+            <span>
+              Plano <span className="font-semibold">{account.planName}</span> ·{" "}
+              {account.remaining} de {account.limit} faixas disponíveis {account.periodLabel}
+            </span>
+            {blocked ? (
+              <Button size="sm" asChild>
+                <Link to="/planos">Escolher um plano</Link>
+              </Button>
+            ) : (
+              <span className="text-xs text-muted-foreground">
+                {paid
+                  ? "Faixa em uso — ajuste e exporte quantas versões quiser."
+                  : "Uma faixa é usada apenas quando você exporta."}
+              </span>
+            )}
+          </section>
+        )}
+        {blocked && (
+          <p className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+            Seu limite de faixas acabou. Assine um plano para continuar exportando.
+          </p>
+        )}
         {/* Fonte de áudio */}
         <section className="panel flex flex-wrap items-center gap-3 p-4">
           <span className="text-xs uppercase tracking-wider text-muted-foreground">Fonte</span>
@@ -516,7 +550,7 @@ function Index() {
             {takeUrl && !recording && (
               <>
                 <audio src={takeUrl} controls className="h-9 max-w-[260px]" />
-                <Button variant="outline" onClick={exportTake} disabled={takeExporting}>
+                <Button variant="outline" onClick={exportTake} disabled={takeExporting || blocked}>
                   {takeExporting ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
@@ -596,7 +630,7 @@ function Index() {
             </div>
             <Button
               onClick={handleExport}
-              disabled={exporting}
+              disabled={exporting || blocked}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {exporting ? (
