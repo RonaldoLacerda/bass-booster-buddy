@@ -550,7 +550,7 @@ function Index() {
             {takeUrl && !recording && (
               <>
                 <audio src={takeUrl} controls className="h-9 max-w-[260px]" />
-                <Button variant="outline" onClick={exportTake} disabled={takeExporting}>
+                <Button variant="outline" onClick={exportTake} disabled={takeExporting || blocked}>
                   {takeExporting ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
