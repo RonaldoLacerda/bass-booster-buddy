@@ -409,6 +409,7 @@ function Index() {
       toast.error("Grave algo antes de exportar.");
       return;
     }
+    if (!(await ensureQuota())) return;
     setTakeExporting(true);
     try {
       if (settings.normalize) normalizeBuffer(buf, settings.targetPeak);
