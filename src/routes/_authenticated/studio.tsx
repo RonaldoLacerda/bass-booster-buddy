@@ -630,7 +630,7 @@ function Index() {
             </div>
             <Button
               onClick={handleExport}
-              disabled={exporting}
+              disabled={exporting || blocked}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {exporting ? (
