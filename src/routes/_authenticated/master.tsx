@@ -23,13 +23,13 @@ export const Route = createFileRoute("/_authenticated/master")({
       {
         name: "description",
         content:
-          "Envie a gravação do culto, da pregação ou do louvor e receba um diagnóstico técnico real (LUFS, picos, graves) com correção automática de volume, grave e clareza. Tudo no seu navegador.",
+          "Envie sua gravação — música, ensaio, podcast, aula ou evento — e receba um diagnóstico técnico real (LUFS, picos, graves) com correção automática de volume, grave e clareza. Tudo no seu navegador.",
       },
       { property: "og:title", content: "Masterizar áudio | Audio Master" },
       {
         property: "og:description",
         content:
-          "Diagnóstico automático e masterização de gravações de culto, pregação e louvor — volume, graves e clareza corrigidos em segundos.",
+          "Diagnóstico automático e masterização de qualquer gravação — volume, graves e clareza corrigidos em segundos.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -165,7 +165,7 @@ function Master() {
               Masterize seu áudio com IA
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Feito para gravações de culto, pregação e louvor. Analisamos seu arquivo, mostramos o que está
+              Música, ensaio, podcast, aula, evento ao vivo. Analisamos seu arquivo, mostramos o que está
               errado e corrigimos volume, grave e clareza — tudo dentro do seu navegador, sem enviar nada.
             </p>
           </div>

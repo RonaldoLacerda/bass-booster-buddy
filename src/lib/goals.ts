@@ -24,9 +24,9 @@ export type GoalProfile = {
 export const GOALS: GoalProfile[] = [
   {
     id: "worship_live",
-    emoji: "🙏",
-    name: "Culto ao vivo",
-    tagline: "Mais clareza e impacto para ouvir a gravação completa.",
+    emoji: "🎚️",
+    name: "Gravação ao vivo",
+    tagline: "Show, ensaio, culto ou evento: mais clareza e impacto.",
     targetLufs: -14,
     ceiling: -1,
     highpass: 38,
@@ -38,8 +38,8 @@ export const GOALS: GoalProfile[] = [
   {
     id: "preaching",
     emoji: "🎤",
-    name: "Pregação",
-    tagline: "Prioriza inteligibilidade e presença da voz.",
+    name: "Voz falada",
+    tagline: "Podcast, aula, pregação ou narração: voz clara e presente.",
     targetLufs: -16,
     ceiling: -1.5,
     highpass: 85,
@@ -51,8 +51,8 @@ export const GOALS: GoalProfile[] = [
   {
     id: "worship",
     emoji: "🎵",
-    name: "Louvor",
-    tagline: "Equilibra banda e destaca a voz.",
+    name: "Música / banda",
+    tagline: "Equilibra a banda e destaca a voz principal.",
     targetLufs: -14,
     ceiling: -1,
     highpass: 32,
@@ -169,8 +169,8 @@ export const FOCUS: FocusProfile[] = [
   {
     id: "guitar",
     emoji: "🎸",
-    name: "Violão",
-    cta: "Quero ouvir melhor o violão",
+    name: "Guitarra / violão",
+    cta: "Quero ouvir melhor a guitarra ou o violão",
     explanation:
       "Damos corpo controlado e brilho de cordas, sem deixar o som fino nem estridente.",
     gains: { sub: -3, bass: 1, lowmid: -2, mid: 1, himid: 2, pres: 3, sib: 2, air: 2 },
@@ -179,8 +179,8 @@ export const FOCUS: FocusProfile[] = [
   {
     id: "speech",
     emoji: "🎙️",
-    name: "Pregação",
-    cta: "Quero ouvir melhor a pregação",
+    name: "Voz falada",
+    cta: "Quero ouvir melhor a fala",
     explanation:
       "Aplicamos filtro subsônico, controlamos o peito da voz e reforçamos a faixa de inteligibilidade.",
     gains: { sub: -8, low: -4, lowmid: -3, mid: 1, upmid: 3, himid: 4, pres: 3 },
