@@ -59,13 +59,13 @@ type InputMode = "file" | "mic";
 export const Route = createFileRoute("/_authenticated/studio")({
   head: () => ({
     meta: [
-      { title: "Equalizador e Gravador de Áudio | Mesa de Culto" },
+      { title: "Equalizador e gravador de áudio | Modo avançado" },
       {
         name: "description",
         content:
-          "Equalize gravações de culto com EQ de 10 bandas, presets prontos e personalizados, grave o som já mixado do microfone ou de um arquivo e exporte em WAV ou MP3 320 kbps.",
+          "Equalize qualquer gravação com EQ de 10 bandas, presets prontos e personalizados, grave o som já mixado do microfone ou de um arquivo e exporte em WAV ou MP3 320 kbps.",
       },
-      { property: "og:title", content: "Mesa de Masterização de Culto" },
+      { property: "og:title", content: "Mesa de masterização — modo avançado" },
       {
         property: "og:description",
         content:
@@ -451,7 +451,7 @@ function Index() {
             <div>
               <h1 className="text-lg font-semibold">Mesa de Masterização</h1>
               <p className="text-xs text-muted-foreground">
-                Equalize, grave e exporte o áudio do culto
+                Equalize, grave e exporte seu áudio
               </p>
             </div>
           </div>

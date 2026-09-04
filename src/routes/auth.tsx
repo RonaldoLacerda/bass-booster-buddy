@@ -14,7 +14,7 @@ export const Route = createFileRoute("/auth")({
       {
         name: "description",
         content:
-          "Acesse sua conta do Audio Master para masterizar gravações de culto, pregação e louvor. Cadastro com e-mail e senha e 1 faixa grátis.",
+          "Acesse sua conta do Audio Master para masterizar músicas, ensaios, podcasts e gravações ao vivo. Cadastro com e-mail e senha e 1 faixa grátis.",
       },
       { property: "og:title", content: "Entrar ou criar conta | Audio Master" },
       {

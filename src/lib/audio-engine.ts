@@ -64,7 +64,7 @@ export const PRESETS: Preset[] = [
   },
   {
     id: "culto",
-    name: "Culto ao vivo",
+    name: "Ao vivo",
     description: "Corpo, corte de sujeira e clareza na voz",
     apply: (s) => ({
       ...withBands(s, { sub: 3, low: 3, bass: 4, lowmid: -3, mid: -1, upmid: 1, himid: 2, pres: 3, sib: 2, air: 2 }),
@@ -103,7 +103,7 @@ export const PRESETS: Preset[] = [
   },
   {
     id: "voz",
-    name: "Voz / pregação",
+    name: "Voz falada",
     description: "Inteligibilidade da palavra falada",
     apply: (s) => ({
       ...withBands(s, { sub: -6, low: -3, bass: 0, lowmid: -3, mid: 1, upmid: 3, himid: 4, pres: 4, sib: 2, air: 1 }),
@@ -131,7 +131,7 @@ export const PRESETS: Preset[] = [
   {
     id: "banda",
     name: "Banda completa",
-    description: "Curva sorriso equilibrada para louvor com banda",
+    description: "Curva sorriso equilibrada para música com banda",
     apply: (s) => ({
       ...withBands(s, { sub: 3, low: 4, bass: 2, lowmid: -3, mid: -2, upmid: 0, himid: 2, pres: 3, sib: 3, air: 4 }),
       highpass: 32,
@@ -157,7 +157,7 @@ export const PRESETS: Preset[] = [
   },
   {
     id: "podcast",
-    name: "Pregação limpa",
+    name: "Fala limpa",
     description: "Sem chiado nem estouro, ideal para YouTube",
     apply: (s) => ({
       ...withBands(s, { sub: -8, low: -4, bass: 1, lowmid: -2, mid: 1, upmid: 2, himid: 3, pres: 2, sib: -2, air: 0 }),
