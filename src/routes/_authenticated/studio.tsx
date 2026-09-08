@@ -10,7 +10,7 @@ import {
   Music,
   Pause,
   Play,
-  RotateCcw,
+  Sparkles,
   Save,
   SlidersHorizontal,
   Square,
@@ -464,7 +464,7 @@ function Index() {
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" asChild>
               <Link to="/master">
-                <RotateCcw className="mr-2 h-4 w-4" /> Voltar ao modo simples
+                <Sparkles className="mr-2 h-4 w-4" /> Modo simplificado (IA)
               </Link>
             </Button>
             <label className="cursor-pointer">
@@ -663,7 +663,7 @@ function Index() {
             </div>
             <Button
               onClick={handleExport}
-              disabled={exporting || blocked}
+              disabled={exporting || blocked || !audioUrl}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {exporting ? (
