@@ -569,19 +569,46 @@ function Index() {
           </div>
         </section>
 
+        {/* Nenhum áudio carregado */}
+        {!audioUrl && (
+          <section className="panel flex flex-col items-center gap-3 border border-dashed border-border p-12 text-center">
+            <Upload className="h-8 w-8 text-accent" />
+            <h2 className="font-semibold">Carregue um áudio para começar</h2>
+            <p className="max-w-md text-sm text-muted-foreground">
+              Escolha um arquivo MP3, WAV, M4A ou OGG do seu aparelho, ou mude a fonte para
+              microfone e grave direto na mesa. Tudo fica no seu navegador.
+            </p>
+            <label className="cursor-pointer">
+              <input
+                type="file"
+                accept="audio/*"
+                className="hidden"
+                onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
+              />
+              <span className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+                <Upload className="h-4 w-4" /> Escolher áudio
+              </span>
+            </label>
+          </section>
+        )}
+
         {/* Transporte */}
         <section className="panel p-5">
           <div className="flex flex-wrap items-center gap-4">
             <Button
               size="icon"
               onClick={togglePlay}
+              disabled={!audioUrl}
               className="h-14 w-14 rounded-full bg-[image:var(--gradient-accent)] text-accent-foreground hover:opacity-90"
               aria-label={playing ? "Pausar" : "Tocar"}
             >
               {playing ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
             </Button>
             <div className="min-w-[220px] flex-1">
-              <p className="truncate text-sm font-medium">{fileName}</p>
+              <p className="truncate text-sm font-medium">
+                {fileName || "Nenhum áudio carregado"}
+              </p>
+
               <div className="mt-2 flex items-center gap-3">
                 <span className="font-mono text-xs text-muted-foreground">
                   {formatTime(current)}
