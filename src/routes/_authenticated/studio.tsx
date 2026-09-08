@@ -10,6 +10,7 @@ import {
   Music,
   Pause,
   Play,
+  RotateCcw,
   Sparkles,
   Save,
   SlidersHorizontal,
