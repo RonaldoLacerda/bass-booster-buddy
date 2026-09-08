@@ -14,7 +14,7 @@ export function AppNav() {
     <nav className="border-b border-border bg-[var(--surface-sunken)]">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-3 px-4 py-3 text-sm">
         <Link to="/master" className="font-semibold">
-          Audio Master
+          AudioMix
         </Link>
         <Link to="/master" className="text-muted-foreground hover:text-foreground">
           Masterizar

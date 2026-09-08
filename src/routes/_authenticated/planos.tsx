@@ -13,13 +13,13 @@ import { PLANS, formatBRL } from "@/lib/plans";
 export const Route = createFileRoute("/_authenticated/planos")({
   head: () => ({
     meta: [
-      { title: "Planos e assinatura | Audio Master" },
+      { title: "Planos e assinatura | AudioMix" },
       {
         name: "description",
         content:
           "Escolha o plano de masterização por número de faixas por mês: 7, 12 ou 30 faixas com diagnóstico e exportação profissional.",
       },
-      { property: "og:title", content: "Planos e assinatura | Audio Master" },
+      { property: "og:title", content: "Planos e assinatura | AudioMix" },
       { property: "og:description", content: "Planos de 7, 12 ou 30 faixas por mês." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

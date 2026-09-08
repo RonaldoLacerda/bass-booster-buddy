@@ -12,12 +12,12 @@ import { formatBRL } from "@/lib/plans";
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
-      { title: "Solicitações de plano | Audio Master" },
+      { title: "Solicitações de plano | AudioMix" },
       {
         name: "description",
-        content: "Painel interno com as solicitações de assinatura recebidas no Audio Master.",
+        content: "Painel interno com as solicitações de assinatura recebidas no AudioMix.",
       },
-      { property: "og:title", content: "Solicitações de plano | Audio Master" },
+      { property: "og:title", content: "Solicitações de plano | AudioMix" },
       { property: "og:description", content: "Painel interno de solicitações de assinatura." },
       { property: "og:type", content: "website" },
       { name: "robots", content: "noindex" },

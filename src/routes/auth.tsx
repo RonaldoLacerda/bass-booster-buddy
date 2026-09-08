@@ -10,13 +10,13 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Entrar ou criar conta | Audio Master" },
+      { title: "Entrar ou criar conta | AudioMix" },
       {
         name: "description",
         content:
-          "Acesse sua conta do Audio Master para masterizar músicas, ensaios, podcasts e gravações ao vivo. Cadastro com e-mail e senha e 1 faixa grátis.",
+          "Acesse sua conta do AudioMix para masterizar músicas, ensaios, podcasts e gravações ao vivo. Cadastro com e-mail e senha e 1 faixa grátis.",
       },
-      { property: "og:title", content: "Entrar ou criar conta | Audio Master" },
+      { property: "og:title", content: "Entrar ou criar conta | AudioMix" },
       {
         property: "og:description",
         content: "Crie sua conta grátis e masterize sua primeira faixa em segundos.",
@@ -90,7 +90,7 @@ function AuthPage() {
           password,
         });
         if (err) throw err;
-        void navigate({ to: "/master" });
+        void navigate({ to: "/studio" });
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Falha na autenticação.";
@@ -112,7 +112,7 @@ function AuthPage() {
     <main className="flex min-h-screen items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <Link to="/" className="mb-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Music className="h-4 w-4 text-accent" /> Audio Master
+          <Music className="h-4 w-4 text-accent" /> AudioMix
         </Link>
         <div className="panel p-6">
           <h1 className="text-2xl font-bold tracking-tight">

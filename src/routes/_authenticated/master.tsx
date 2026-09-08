@@ -19,13 +19,13 @@ import { consumeTrack, getAccount } from "@/lib/account.functions";
 export const Route = createFileRoute("/_authenticated/master")({
   head: () => ({
     meta: [
-      { title: "Masterizar áudio | Audio Master" },
+      { title: "Masterizar áudio | AudioMix" },
       {
         name: "description",
         content:
           "Envie sua gravação — música, ensaio, podcast, aula ou evento — e receba um diagnóstico técnico real (LUFS, picos, graves) com correção automática de volume, grave e clareza. Tudo no seu navegador.",
       },
-      { property: "og:title", content: "Masterizar áudio | Audio Master" },
+      { property: "og:title", content: "Masterizar áudio | AudioMix" },
       {
         property: "og:description",
         content:
