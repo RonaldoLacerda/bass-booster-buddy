@@ -52,7 +52,8 @@ import {
   type CustomPreset,
 } from "@/lib/custom-presets";
 import { decodeBlob, formatClock, pickRecorderMime } from "@/lib/recorder";
-import demoAudio from "@/assets/vigilia.mp3.asset.json";
+import { Onboarding } from "@/components/Onboarding";
+
 
 type InputMode = "file" | "mic";
 
@@ -80,8 +81,9 @@ export const Route = createFileRoute("/_authenticated/studio")({
 
 function Index() {
   const [settings, setSettings] = useState<EqSettings>(DEFAULT_SETTINGS);
-  const [fileName, setFileName] = useState("VIGÍLIA ON FLAMES 28/08/2026.mp3");
-  const [audioUrl, setAudioUrl] = useState<string>(demoAudio.url);
+  const [fileName, setFileName] = useState("");
+  const [audioUrl, setAudioUrl] = useState<string>("");
+
   const [playing, setPlaying] = useState(false);
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -220,9 +222,11 @@ function Index() {
     let cancelled = false;
     setInputPeak(null);
     bufferRef.current = null;
+    if (!audioUrl) return;
     (async () => {
       try {
         const res = await fetch(audioUrl);
+
         const ab = await res.arrayBuffer();
         const ctx = new OfflineAudioContext(1, 1, 48000);
         const buf = await ctx.decodeAudioData(ab);
@@ -430,9 +434,11 @@ function Index() {
   return (
     <div className="min-h-screen">
       <Toaster position="top-center" />
+      <Onboarding id="studio" />
       <audio
         ref={audioRef}
-        src={audioUrl}
+        src={audioUrl || undefined}
+
         crossOrigin="anonymous"
         onTimeUpdate={(e) => setCurrent(e.currentTarget.currentTime)}
         onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
