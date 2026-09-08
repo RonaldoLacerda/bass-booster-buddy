@@ -12,15 +12,23 @@ export function AppNav() {
 
   return (
     <nav className="border-b border-border bg-[var(--surface-sunken)]">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-3 px-4 py-3 text-sm">
-        <Link to="/master" className="font-semibold">
-          Audio Master
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3 text-sm">
+        <Link to="/studio" className="font-semibold">
+          AudioMix
         </Link>
-        <Link to="/master" className="text-muted-foreground hover:text-foreground">
-          Masterizar
+        <Link
+          to="/studio"
+          className="text-muted-foreground hover:text-foreground"
+          activeProps={{ className: "font-semibold text-foreground" }}
+        >
+          Mesa completa
         </Link>
-        <Link to="/studio" className="text-muted-foreground hover:text-foreground">
-          Modo avançado
+        <Link
+          to="/master"
+          className="text-muted-foreground hover:text-foreground"
+          activeProps={{ className: "font-semibold text-foreground" }}
+        >
+          Modo simplificado
         </Link>
         <Link to="/planos" className="text-muted-foreground hover:text-foreground">
           Planos

@@ -11,6 +11,7 @@ import {
   Pause,
   Play,
   RotateCcw,
+  Sparkles,
   Save,
   SlidersHorizontal,
   Square,
@@ -52,7 +53,8 @@ import {
   type CustomPreset,
 } from "@/lib/custom-presets";
 import { decodeBlob, formatClock, pickRecorderMime } from "@/lib/recorder";
-import demoAudio from "@/assets/vigilia.mp3.asset.json";
+import { Onboarding } from "@/components/Onboarding";
+
 
 type InputMode = "file" | "mic";
 
@@ -80,8 +82,9 @@ export const Route = createFileRoute("/_authenticated/studio")({
 
 function Index() {
   const [settings, setSettings] = useState<EqSettings>(DEFAULT_SETTINGS);
-  const [fileName, setFileName] = useState("VIGÍLIA ON FLAMES 28/08/2026.mp3");
-  const [audioUrl, setAudioUrl] = useState<string>(demoAudio.url);
+  const [fileName, setFileName] = useState("");
+  const [audioUrl, setAudioUrl] = useState<string>("");
+
   const [playing, setPlaying] = useState(false);
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -220,9 +223,11 @@ function Index() {
     let cancelled = false;
     setInputPeak(null);
     bufferRef.current = null;
+    if (!audioUrl) return;
     (async () => {
       try {
         const res = await fetch(audioUrl);
+
         const ab = await res.arrayBuffer();
         const ctx = new OfflineAudioContext(1, 1, 48000);
         const buf = await ctx.decodeAudioData(ab);
@@ -430,9 +435,11 @@ function Index() {
   return (
     <div className="min-h-screen">
       <Toaster position="top-center" />
+      <Onboarding id="studio" />
       <audio
         ref={audioRef}
-        src={audioUrl}
+        src={audioUrl || undefined}
+
         crossOrigin="anonymous"
         onTimeUpdate={(e) => setCurrent(e.currentTarget.currentTime)}
         onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
@@ -458,7 +465,7 @@ function Index() {
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" asChild>
               <Link to="/master">
-                <RotateCcw className="mr-2 h-4 w-4" /> Voltar ao modo simples
+                <Sparkles className="mr-2 h-4 w-4" /> Modo simplificado (IA)
               </Link>
             </Button>
             <label className="cursor-pointer">
@@ -563,19 +570,46 @@ function Index() {
           </div>
         </section>
 
+        {/* Nenhum áudio carregado */}
+        {!audioUrl && (
+          <section className="panel flex flex-col items-center gap-3 border border-dashed border-border p-12 text-center">
+            <Upload className="h-8 w-8 text-accent" />
+            <h2 className="font-semibold">Carregue um áudio para começar</h2>
+            <p className="max-w-md text-sm text-muted-foreground">
+              Escolha um arquivo MP3, WAV, M4A ou OGG do seu aparelho, ou mude a fonte para
+              microfone e grave direto na mesa. Tudo fica no seu navegador.
+            </p>
+            <label className="cursor-pointer">
+              <input
+                type="file"
+                accept="audio/*"
+                className="hidden"
+                onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
+              />
+              <span className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+                <Upload className="h-4 w-4" /> Escolher áudio
+              </span>
+            </label>
+          </section>
+        )}
+
         {/* Transporte */}
         <section className="panel p-5">
           <div className="flex flex-wrap items-center gap-4">
             <Button
               size="icon"
               onClick={togglePlay}
+              disabled={!audioUrl}
               className="h-14 w-14 rounded-full bg-[image:var(--gradient-accent)] text-accent-foreground hover:opacity-90"
               aria-label={playing ? "Pausar" : "Tocar"}
             >
               {playing ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
             </Button>
             <div className="min-w-[220px] flex-1">
-              <p className="truncate text-sm font-medium">{fileName}</p>
+              <p className="truncate text-sm font-medium">
+                {fileName || "Nenhum áudio carregado"}
+              </p>
+
               <div className="mt-2 flex items-center gap-3">
                 <span className="font-mono text-xs text-muted-foreground">
                   {formatTime(current)}
@@ -630,7 +664,7 @@ function Index() {
             </div>
             <Button
               onClick={handleExport}
-              disabled={exporting || blocked}
+              disabled={exporting || blocked || !audioUrl}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {exporting ? (

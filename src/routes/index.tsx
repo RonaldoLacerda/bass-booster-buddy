@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { FREE_TRACKS, PLANS, formatBRL } from "@/lib/plans";
 
-const TITLE = "Audio Master — masterize seu áudio online com IA";
+const TITLE = "AudioMix — masterize seu áudio online com IA";
 const DESCRIPTION =
   "Envie sua gravação (música, ensaio, podcast, aula ou evento ao vivo) e receba diagnóstico técnico real (LUFS, picos, graves) com correção automática de volume, grave e clareza. 1 faixa grátis, sem instalar nada.";
 
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "SoftwareApplication",
-          name: "Audio Master",
+          name: "AudioMix",
           applicationCategory: "MultimediaApplication",
           operatingSystem: "Web",
           description: DESCRIPTION,
@@ -123,7 +123,7 @@ const FEATURES = [
 const FAQ = [
   {
     q: "Preciso instalar algum programa?",
-    a: "Não. O Audio Master roda no navegador (Chrome, Edge, Safari ou Firefox atualizados), no computador ou no celular.",
+    a: "Não. O AudioMix roda no navegador (Chrome, Edge, Safari ou Firefox atualizados), no computador ou no celular.",
   },
   {
     q: "Meu áudio é enviado para a nuvem?",
@@ -149,7 +149,7 @@ function Landing() {
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
           <span className="flex items-center gap-2 font-semibold">
-            <Music className="h-5 w-5 text-accent" /> Audio Master
+            <Music className="h-5 w-5 text-accent" /> AudioMix
           </span>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" asChild>
@@ -171,7 +171,7 @@ function Landing() {
             Seu áudio alto, com grave firme e voz clara
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-            Gravou e ficou baixo, sem corpo ou embolado? O Audio Master analisa a gravação, mostra
+            Gravou e ficou baixo, sem corpo ou embolado? O AudioMix analisa a gravação, mostra
             exatamente o que está errado e corrige volume, graves e clareza em segundos — direto no
             navegador, sem enviar nada para a internet.
           </p>
@@ -280,7 +280,7 @@ function Landing() {
       </main>
 
       <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
-        Audio Master · processamento local no navegador · {new Date().getFullYear()}
+        AudioMix · processamento local no navegador · {new Date().getFullYear()}
       </footer>
     </div>
   );

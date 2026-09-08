@@ -15,17 +15,18 @@ import { FOCUS, type FocusId, type GoalId, goalById } from "@/lib/goals";
 import { masterAudio, type MasterResult } from "@/lib/mastering";
 import { formatClock } from "@/lib/recorder";
 import { consumeTrack, getAccount } from "@/lib/account.functions";
+import { Onboarding } from "@/components/Onboarding";
 
 export const Route = createFileRoute("/_authenticated/master")({
   head: () => ({
     meta: [
-      { title: "Masterizar áudio | Audio Master" },
+      { title: "Masterizar áudio | AudioMix" },
       {
         name: "description",
         content:
           "Envie sua gravação — música, ensaio, podcast, aula ou evento — e receba um diagnóstico técnico real (LUFS, picos, graves) com correção automática de volume, grave e clareza. Tudo no seu navegador.",
       },
-      { property: "og:title", content: "Masterizar áudio | Audio Master" },
+      { property: "og:title", content: "Masterizar áudio | AudioMix" },
       {
         property: "og:description",
         content:
@@ -158,11 +159,12 @@ function Master() {
   return (
     <>
       <AppNav />
+      <Onboarding id="master" />
       <main className="mx-auto max-w-5xl px-4 py-10">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="font-[var(--font-display,inherit)] text-3xl font-bold tracking-tight sm:text-4xl">
-              Masterize seu áudio com IA
+              Modo simplificado — a IA cuida de tudo
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
               Música, ensaio, podcast, aula, evento ao vivo. Analisamos seu arquivo, mostramos o que está
@@ -179,7 +181,7 @@ function Master() {
             <Button variant="ghost" size="sm" asChild>
               <Link to="/studio">
                 <Sliders className="mr-2 h-4 w-4" />
-                Modo avançado
+                Mesa completa
               </Link>
             </Button>
           </div>
