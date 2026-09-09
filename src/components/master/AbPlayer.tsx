@@ -67,17 +67,17 @@ export function AbPlayer({ originalUrl, processed, before, after }: Props) {
   ];
 
   return (
-    <section className="panel p-5">
+    <section className="panel p-4 sm:p-5">
       <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
         🎧 Antes x Depois
       </h2>
 
-      <div className="mt-4 flex gap-2">
+      <div className="mt-4 grid grid-cols-2 gap-2">
         {(["before", "after"] as const).map((s) => (
           <button
             key={s}
             onClick={() => setSide(s)}
-            className={`flex-1 rounded-lg border px-4 py-2 text-sm font-semibold transition-colors ${
+            className={`rounded-lg border px-3 py-3 text-sm font-semibold transition-colors ${
               side === s ? "border-accent bg-accent/15 text-accent" : "border-border text-muted-foreground"
             }`}
           >
@@ -87,15 +87,23 @@ export function AbPlayer({ originalUrl, processed, before, after }: Props) {
       </div>
 
       <div className="mt-4 flex items-center gap-3">
-        <Button size="icon" onClick={toggle} aria-label={playing ? "Pausar" : "Tocar"}>
-          {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+        <Button
+          size="icon"
+          onClick={toggle}
+          aria-label={playing ? "Pausar" : "Tocar"}
+          className="h-12 w-12 shrink-0 rounded-full"
+        >
+          {playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
         </Button>
-        <span className="w-12 shrink-0 font-mono text-xs text-muted-foreground">{formatClock(pos)}</span>
-        <Slider value={[pos]} min={0} max={dur || 1} step={0.1} onValueChange={([v]) => seek(v ?? 0)} />
-        <span className="w-12 shrink-0 text-right font-mono text-xs text-muted-foreground">
-          {formatClock(dur)}
-        </span>
+        <div className="min-w-0 flex-1">
+          <Slider value={[pos]} min={0} max={dur || 1} step={0.1} onValueChange={([v]) => seek(v ?? 0)} />
+          <div className="mt-1.5 flex justify-between font-mono text-[11px] text-muted-foreground">
+            <span>{formatClock(pos)}</span>
+            <span>{formatClock(dur)}</span>
+          </div>
+        </div>
       </div>
+
 
       <audio
         ref={aRef}
@@ -113,9 +121,9 @@ export function AbPlayer({ originalUrl, processed, before, after }: Props) {
         onEnded={() => setPlaying(false)}
       />
 
-      <table className="mt-5 w-full text-sm">
+      <table className="mt-5 w-full text-xs sm:text-sm">
         <thead>
-          <tr className="text-xs uppercase tracking-wider text-muted-foreground">
+          <tr className="text-[10px] uppercase tracking-wider text-muted-foreground sm:text-xs">
             <th className="pb-2 text-left font-medium">Medida</th>
             <th className="pb-2 text-right font-medium">Antes</th>
             <th className="pb-2 text-right font-medium">Depois</th>
@@ -124,13 +132,14 @@ export function AbPlayer({ originalUrl, processed, before, after }: Props) {
         <tbody className="font-mono">
           {rows.map(([label, b, a]) => (
             <tr key={label} className="border-t border-border/50">
-              <td className="py-2 font-sans text-muted-foreground">{label}</td>
+              <td className="py-2 pr-2 font-sans text-muted-foreground">{label}</td>
               <td className="py-2 text-right">{b}</td>
               <td className="py-2 text-right font-semibold text-accent">{a}</td>
             </tr>
           ))}
         </tbody>
       </table>
+
     </section>
   );
 }
