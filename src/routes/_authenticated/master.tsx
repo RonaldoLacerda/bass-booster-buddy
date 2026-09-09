@@ -160,10 +160,10 @@ function Master() {
     <>
       <AppNav />
       <Onboarding id="master" />
-      <main className="mx-auto max-w-5xl px-4 py-10">
-        <header className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="font-[var(--font-display,inherit)] text-3xl font-bold tracking-tight sm:text-4xl">
+      <main className="mx-auto max-w-5xl px-4 py-6 sm:py-10">
+        <header className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="font-[var(--font-display,inherit)] text-2xl font-bold tracking-tight sm:text-4xl">
               Modo simplificado — a IA cuida de tudo
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
@@ -173,12 +173,12 @@ function Master() {
           </div>
           <div className="flex gap-2">
             {stage !== "upload" && (
-              <Button variant="outline" size="sm" onClick={reset}>
+              <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={reset}>
                 <RotateCcw className="mr-2 h-4 w-4" />
                 Novo áudio
               </Button>
             )}
-            <Button variant="ghost" size="sm" asChild>
+            <Button variant="ghost" size="sm" className="flex-1 sm:flex-none" asChild>
               <Link to="/studio">
                 <Sliders className="mr-2 h-4 w-4" />
                 Mesa completa
@@ -193,6 +193,7 @@ function Master() {
             {account.remaining} de {account.limit} faixas disponíveis {account.periodLabel}
           </p>
         )}
+
 
         {blocked && (
           <section className="panel mt-6 flex flex-col items-start gap-3 border border-accent/50 p-5">

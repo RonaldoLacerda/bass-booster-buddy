@@ -73,7 +73,6 @@ export function DiagnosisCard({ diagnosis, metrics, onProcess, processing }: Pro
       </section>
 
       <section className="panel flex flex-col p-4 sm:p-5">
-
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           ✨ O que vamos melhorar
         </h2>
