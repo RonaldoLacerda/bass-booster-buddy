@@ -31,11 +31,11 @@ export function ExportCard({ buffer, baseName }: Props) {
   };
 
   return (
-    <section className="panel p-5">
+    <section className="panel p-4 sm:p-5">
       <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
         📤 Baixar resultado
       </h2>
-      <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-5">
         {EXPORT_PRESETS.map((p) => (
           <button
             key={p.id}
@@ -50,8 +50,8 @@ export function ExportCard({ buffer, baseName }: Props) {
           </button>
         ))}
       </div>
-      <div className="mt-4 flex items-center gap-3">
-        <Button size="lg" onClick={handleExport} disabled={busy}>
+      <div className="mt-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
+        <Button size="lg" className="w-full sm:w-auto" onClick={handleExport} disabled={busy}>
           <Download className="mr-2 h-4 w-4" />
           {busy ? "Gerando arquivo..." : "Baixar áudio melhorado"}
         </Button>
@@ -59,6 +59,7 @@ export function ExportCard({ buffer, baseName }: Props) {
           <span className="text-xs text-muted-foreground">Último arquivo: {formatBytes(lastSize)}</span>
         )}
       </div>
+
     </section>
   );
 }

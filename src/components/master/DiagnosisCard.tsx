@@ -30,28 +30,32 @@ export function DiagnosisCard({ diagnosis, metrics, onProcess, processing }: Pro
     diagnosis.score >= 80 ? "text-emerald-400" : diagnosis.score >= 60 ? "text-accent" : "text-destructive";
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-      <section className="panel p-5">
+    <div className="grid gap-4 sm:gap-6 lg:grid-cols-[1.4fr_1fr]">
+      <section className="panel p-4 sm:p-5">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           🔎 Diagnóstico do áudio
         </h2>
         <div className="mt-3 flex items-end gap-3">
-          <span className={`font-mono text-5xl font-bold ${scoreColor}`}>{diagnosis.score}</span>
-          <span className="pb-2 text-sm text-muted-foreground">/100</span>
+          <span className={`font-mono text-4xl font-bold sm:text-5xl ${scoreColor}`}>
+            {diagnosis.score}
+          </span>
+          <span className="pb-1.5 text-sm text-muted-foreground sm:pb-2">/100</span>
         </div>
         <p className="mt-2 text-sm text-muted-foreground">{diagnosis.summary}</p>
+
 
         <ul className="mt-4 space-y-3">
           {diagnosis.issues.map((i) => (
             <li key={i.id} className="flex gap-3 rounded-lg bg-[var(--surface-sunken)] p-3">
               <Icon s={i.severity} />
-              <div>
+              <div className="min-w-0">
                 <p className="text-sm font-semibold">{i.title}</p>
                 <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{i.description}</p>
               </div>
             </li>
           ))}
         </ul>
+
 
         <dl className="mt-4 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
           {[
@@ -68,7 +72,7 @@ export function DiagnosisCard({ diagnosis, metrics, onProcess, processing }: Pro
         </dl>
       </section>
 
-      <section className="panel flex flex-col p-5">
+      <section className="panel flex flex-col p-4 sm:p-5">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           ✨ O que vamos melhorar
         </h2>
