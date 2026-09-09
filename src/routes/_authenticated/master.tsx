@@ -292,7 +292,7 @@ function Master() {
         )}
 
         {diagnosis && metrics && stage !== "upload" && stage !== "goal" && (
-          <div className="mt-8">
+          <div className="mt-6 sm:mt-8">
             <DiagnosisCard
               diagnosis={diagnosis}
               metrics={metrics}
@@ -303,7 +303,7 @@ function Master() {
         )}
 
         {stage === "result" && master && metrics && originalUrl && (
-          <div className="mt-8 space-y-6">
+          <div className="mt-6 space-y-4 sm:mt-8 sm:space-y-6">
             <AbPlayer
               originalUrl={originalUrl}
               processed={master.buffer}
@@ -311,17 +311,17 @@ function Master() {
               after={master.metrics}
             />
 
-            <section className="panel p-5">
+            <section className="panel p-4 sm:p-5">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 🎸 Destacar um instrumento
               </h2>
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
                 {FOCUS.map((f) => (
                   <button
                     key={f.id}
                     onClick={() => void changeFocus(f.id)}
                     disabled={processing}
-                    className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                    className={`shrink-0 rounded-full border px-3.5 py-2 text-sm transition-colors ${
                       focus === f.id
                         ? "border-accent bg-accent/15 text-accent"
                         : "border-border text-muted-foreground hover:border-accent/60"
@@ -331,6 +331,7 @@ function Master() {
                   </button>
                 ))}
               </div>
+
               {insight && (
                 <div className="mt-4 space-y-2 rounded-lg bg-[var(--surface-sunken)] p-4 text-sm">
                   <p>
