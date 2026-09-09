@@ -194,9 +194,8 @@ function Master() {
           </p>
         )}
 
-
         {blocked && (
-          <section className="panel mt-6 flex flex-col items-start gap-3 border border-accent/50 p-5">
+          <section className="panel mt-6 flex flex-col items-start gap-3 border border-accent/50 p-4 sm:p-5">
             <Lock className="h-6 w-6 text-accent" />
             <h2 className="text-lg font-semibold">Seu limite de faixas acabou</h2>
             <p className="text-sm text-muted-foreground">
@@ -204,7 +203,7 @@ function Master() {
                 ? "Você já usou sua faixa gratuita. Escolha um plano para continuar masterizando."
                 : "Você usou todas as faixas do seu plano neste mês. Faça upgrade para liberar mais."}
             </p>
-            <Button asChild>
+            <Button className="w-full sm:w-auto" asChild>
               <Link to="/planos">Ver planos</Link>
             </Button>
           </section>
@@ -217,7 +216,7 @@ function Master() {
         )}
 
         {stage === "upload" && !blocked && (
-          <section className="mt-8">
+          <section className="mt-6 sm:mt-8">
             <div
               onDragOver={(e) => {
                 e.preventDefault();
@@ -231,7 +230,7 @@ function Master() {
                 if (f) void handleFile(f);
               }}
               onClick={() => inputRef.current?.click()}
-              className={`panel flex cursor-pointer flex-col items-center justify-center gap-3 border border-dashed p-14 text-center transition-colors ${
+              className={`panel flex cursor-pointer flex-col items-center justify-center gap-3 border border-dashed p-8 text-center transition-colors sm:p-14 ${
                 dragging ? "border-accent bg-accent/10" : "border-border"
               }`}
             >
@@ -246,10 +245,16 @@ function Master() {
               ) : (
                 <>
                   <Upload className="h-8 w-8 text-accent" />
-                  <p className="font-semibold">Arraste seu áudio aqui ou clique para escolher</p>
-                  <p className="text-xs text-muted-foreground">
-                    MP3, WAV, M4A ou OGG — processado localmente
+                  <p className="font-semibold sm:hidden">Toque para escolher seu áudio</p>
+                  <p className="hidden font-semibold sm:block">
+                    Arraste seu áudio aqui ou clique para escolher
                   </p>
+                  <p className="text-xs text-muted-foreground">
+                    MP3, WAV, M4A ou OGG — processado no seu aparelho
+                  </p>
+                  <span className="mt-2 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground sm:hidden">
+                    <Upload className="h-4 w-4" /> Enviar áudio
+                  </span>
                 </>
               )}
             </div>
@@ -267,12 +272,13 @@ function Master() {
         )}
 
         {metrics && stage !== "upload" && (
-          <p className="mt-8 text-xs text-muted-foreground">
+          <p className="mt-6 break-words text-xs text-muted-foreground sm:mt-8">
             <span className="font-semibold text-foreground">{fileName}</span> ·{" "}
             {formatClock(metrics.duration)} · {metrics.channels > 1 ? "estéreo" : "mono"} ·{" "}
             {(metrics.sampleRate / 1000).toFixed(1)} kHz
           </p>
         )}
+
 
         {stage !== "upload" && (
           <section className="mt-4">
