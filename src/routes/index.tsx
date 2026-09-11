@@ -16,9 +16,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { FREE_TRACKS, PLANS, formatBRL } from "@/lib/plans";
 
-const TITLE = "AudioMix — masterize seu áudio online com IA";
+const TITLE = "AudioMix — grave, equalize, processe e exporte seu áudio";
 const DESCRIPTION =
-  "Envie sua gravação (música, ensaio, podcast, aula ou evento ao vivo) e receba diagnóstico técnico real (LUFS, picos, graves) com correção automática de volume, grave e clareza. 1 faixa grátis, sem instalar nada.";
+  "Analise e equalize uma gravação pronta ou processe seu áudio em tempo real enquanto grava. O AudioMix ajuda a corrigir volume, graves, dinâmica e clareza e permite comparar e exportar o resultado. 1 faixa grátis, sem instalar nada.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -56,34 +56,35 @@ export const Route = createFileRoute("/")({
 });
 
 const USE_CASES = [
+  "Áudio ao vivo",
   "Música e demo de banda",
-  "Ensaio e show ao vivo",
+  "Ensaio e show",
   "Podcast e entrevista",
-  "Aula, curso e narração",
+  "Aula e narração",
   "Culto e evento",
-  "Vídeo para redes sociais",
+  "Vídeos e redes sociais",
 ];
 
 const STEPS = [
   {
-    icon: Upload,
-    title: "1. Envie o áudio",
-    text: "Arraste um WAV, MP3 ou M4A. O arquivo fica no seu navegador — nada é enviado para servidores.",
+    icon: Mic,
+    title: "1. Grave ao vivo ou envie um áudio",
+    text: "Use uma entrada de áudio para processar e gravar em tempo real ou envie um WAV, MP3 ou M4A já gravado.",
   },
   {
     icon: Activity,
-    title: "2. Veja o diagnóstico",
-    text: "Medimos LUFS, pico real, clipping, graves, dinâmica e estéreo e damos uma nota com os pontos a corrigir.",
+    title: "2. Analise o seu som",
+    text: "Veja LUFS, pico real, clipping, graves, dinâmica e estéreo para entender exatamente o que precisa melhorar.",
   },
   {
-    icon: Sparkles,
-    title: "3. Escolha o objetivo",
-    text: "Ao vivo, música, voz falada, YouTube, WhatsApp ou redes sociais — cada um com alvo de loudness próprio.",
+    icon: Sliders,
+    title: "3. Equalize e processe",
+    text: "Ajuste EQ, volume e dinâmica com controles manuais ou configurações prontas para diferentes objetivos.",
   },
   {
     icon: BadgeCheck,
-    title: "4. Compare e exporte",
-    text: "Ouça antes e depois com as métricas lado a lado e exporte em WAV sem perdas ou MP3 até 320 kbps.",
+    title: "4. Compare, grave e exporte",
+    text: "Ouça o antes e depois, grave o áudio já processado no modo ao vivo e exporte o resultado em WAV ou MP3.",
   },
 ];
 
@@ -110,8 +111,8 @@ const FEATURES = [
   },
   {
     icon: Sliders,
-    title: "Modo avançado",
-    text: "EQ de 10 bandas, presets prontos e personalizados e gravação ao vivo já processada.",
+    title: "Gravação ao vivo processada",
+    text: "Receba uma entrada de áudio, aplique EQ e processamento em tempo real, grave o resultado e exporte depois.",
   },
   {
     icon: ShieldCheck,
@@ -130,12 +131,16 @@ const FAQ = [
     a: "Não. Toda a análise e o processamento acontecem localmente, no seu navegador. O arquivo não sai do seu dispositivo.",
   },
   {
-    q: "Serve só para gravação de igreja?",
-    a: "Não. Funciona para música, ensaio, show, podcast, aula, narração, vídeo para redes sociais e qualquer gravação que esteja baixa, sem grave ou embolada.",
+    q: "O AudioMix funciona com áudio ao vivo?",
+    a: "Sim. Você pode receber uma entrada de áudio, ajustar o processamento em tempo real, gravar o resultado já tratado e depois exportar o arquivo.",
+  },
+  {
+    q: "O AudioMix serve apenas para masterização?",
+    a: "Não. Ele também permite analisar e equalizar gravações prontas e trabalhar com áudio ao vivo, processando e gravando o sinal em tempo real antes de exportar.",
   },
   {
     q: "Como funciona o teste grátis?",
-    a: `Ao criar a conta você masteriza ${FREE_TRACKS} faixa gratuitamente, sem cartão de crédito. Depois basta escolher um plano pelo número de faixas por mês.`,
+    a: `Ao criar a conta você usa ${FREE_TRACKS} faixa gratuitamente, sem cartão de crédito. Depois basta escolher um plano pelo número de faixas por mês.`,
   },
   {
     q: "Em quais formatos posso exportar?",
@@ -165,42 +170,60 @@ function Landing() {
       <main>
         <section className="mx-auto max-w-5xl px-4 py-16 text-center">
           <p className="text-xs font-semibold uppercase tracking-widest text-accent">
-            Masterização online com análise automática
+            Áudio profissional, do ao vivo à gravação final
           </p>
-          <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">
-            Seu áudio alto, com grave firme e voz clara
+          <h1 className="mx-auto mt-4 max-w-4xl text-4xl font-bold tracking-tight sm:text-5xl">
+            Grave. Equalize. Melhore. Exporte.
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-            Gravou e ficou baixo, sem corpo ou embolado? O AudioMix analisa a gravação, mostra
-            exatamente o que está errado e corrige volume, graves e clareza em segundos — direto no
-            navegador, sem enviar nada para a internet.
+          <p className="mx-auto mt-5 max-w-3xl text-base leading-7 text-muted-foreground sm:text-lg">
+            Analise e equalize uma gravação que já existe ou processe seu áudio em tempo real enquanto grava. O AudioMix
+            ajuda a corrigir{" "}
+            <strong className="font-semibold text-foreground">volume, graves, dinâmica e clareza</strong>e permite
+            comparar e exportar o resultado — tudo direto no navegador.
           </p>
+          <div className="mx-auto mt-7 grid max-w-2xl gap-3 text-left sm:grid-cols-2">
+            <div className="panel p-4">
+              <div className="flex items-center gap-2 font-semibold">
+                <Mic className="h-5 w-5 text-accent" />
+                Áudio ao vivo
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Processe, equalize, grave e exporte o áudio já tratado.
+              </p>
+            </div>
+            <div className="panel p-4">
+              <div className="flex items-center gap-2 font-semibold">
+                <Upload className="h-5 w-5 text-accent" />
+                Gravação pronta
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">Analise, equalize, compare e exporte seu arquivo.</p>
+            </div>
+          </div>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button size="lg" asChild>
-              <Link to="/auth">Masterizar {FREE_TRACKS} faixa grátis</Link>
+              <Link to="/auth">Começar grátis</Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <a href="#planos">Ver planos</a>
+              <a href="#como-funciona">Ver como funciona</a>
             </Button>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
-            {FREE_TRACKS} faixa gratuita por conta · sem cartão de crédito · seu áudio não sai do seu
-            dispositivo
+            {FREE_TRACKS} faixa gratuita por conta · sem cartão de crédito · seu áudio não sai do seu dispositivo
           </p>
-          <ul className="mx-auto mt-8 flex max-w-3xl flex-wrap justify-center gap-2">
+          <ul className="mx-auto mt-7 flex max-w-4xl flex-wrap justify-center gap-2">
             {USE_CASES.map((u) => (
-              <li
-                key={u}
-                className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground"
-              >
+              <li key={u} className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">
                 {u}
               </li>
             ))}
           </ul>
         </section>
 
-        <section className="mx-auto max-w-5xl px-4 pb-16">
-          <h2 className="text-2xl font-bold tracking-tight">Como funciona</h2>
+        <section id="como-funciona" className="mx-auto max-w-5xl px-4 pb-16">
+          <h2 className="text-2xl font-bold tracking-tight">Do áudio bruto ao resultado final</h2>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            Um fluxo completo para trabalhar com áudio pronto ou fazer processamento e gravação em tempo real.
+          </p>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((s) => (
               <article key={s.title} className="panel p-5">
@@ -228,8 +251,8 @@ function Landing() {
         <section id="planos" className="mx-auto max-w-5xl px-4 pb-16">
           <h2 className="text-2xl font-bold tracking-tight">Planos</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Comece grátis com {FREE_TRACKS} faixa. Depois escolha o plano pelo número de faixas por mês —
-            cancele quando quiser.
+            Comece grátis com {FREE_TRACKS} faixa. Depois escolha o plano pelo número de faixas por mês — cancele quando
+            quiser.
           </p>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {PLANS.map((plan) => (
