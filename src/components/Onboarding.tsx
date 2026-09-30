@@ -8,7 +8,7 @@ const STEPS: Record<string, Step[]> = {
   studio: [
     {
       title: "Bem-vindo ao AudioMix",
-      text: "Esta é a mesa completa. Você começa carregando um áudio do seu computador ou ligando o microfone — nada é enviado para a internet.",
+      text: "Esta é a mesa completa. Você começa carregando um áudio ou vídeo do seu aparelho, ou ligando o microfone — nada é enviado para a internet.",
     },
     {
       title: "Ajuste o som",
@@ -16,7 +16,7 @@ const STEPS: Record<string, Step[]> = {
     },
     {
       title: "Grave e exporte",
-      text: "Você pode gravar o som já tratado e baixar em WAV sem perdas ou MP3 até 320 kbps. Uma faixa do seu plano só é usada quando você exporta.",
+      text: "Você pode gravar o som já tratado, baixar em WAV ou MP3 e, ao enviar vídeo, salvar uma versão com o áudio melhorado.",
     },
     {
       title: "Com pressa? Use o modo simplificado",
@@ -26,7 +26,7 @@ const STEPS: Record<string, Step[]> = {
   master: [
     {
       title: "Modo simplificado",
-      text: "Envie a gravação e nós medimos volume, picos, graves e clareza para dizer exatamente o que está errado.",
+      text: "Envie um áudio ou vídeo e nós medimos volume, picos, graves e clareza para dizer exatamente o que está errado.",
     },
     {
       title: "Escolha onde vai ser ouvido",
@@ -34,7 +34,7 @@ const STEPS: Record<string, Step[]> = {
     },
     {
       title: "Compare e baixe",
-      text: "Ouça antes e depois com as medições reais e exporte no formato que precisar. Para controle total, use a mesa avançada.",
+      text: "Ouça antes e depois com medições reais. Baixe o áudio ou, se enviou um vídeo, salve-o com a trilha melhorada.",
     },
   ],
 };
