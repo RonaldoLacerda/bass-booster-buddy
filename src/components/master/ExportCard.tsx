@@ -7,7 +7,7 @@ import { downloadBlob, exportVideoWithAudio } from "@/lib/video-export";
 type Props = {
   buffer: AudioBuffer;
   baseName: string;
-  originalVideoUrl?: string;
+  originalVideoUrl?: string | undefined;
 };
 
 export function ExportCard({ buffer, baseName, originalVideoUrl }: Props) {
