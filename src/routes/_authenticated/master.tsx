@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Lock, RotateCcw, Sliders, Upload } from "lucide-react";
+import { FileVideo, Loader2, Lock, RotateCcw, Sliders, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppNav } from "@/components/AppNav";
 import { GoalPicker } from "@/components/master/GoalPicker";
@@ -48,6 +48,7 @@ function Master() {
 
   const [stage, setStage] = useState<Stage>("upload");
   const [fileName, setFileName] = useState("");
+  const [isVideo, setIsVideo] = useState(false);
   const [originalUrl, setOriginalUrl] = useState<string | null>(null);
   const [buffer, setBuffer] = useState<AudioBuffer | null>(null);
   const [metrics, setMetrics] = useState<AudioMetrics | null>(null);
@@ -82,6 +83,7 @@ function Master() {
     setGoal(null);
     setFocus("none");
     setFileName("");
+    setIsVideo(false);
     setError(null);
     setPaid(false);
     setStage("upload");
@@ -91,6 +93,8 @@ function Master() {
     setError(null);
     setAnalyzing(true);
     setFileName(file.name.replace(/\.[^.]+$/, ""));
+    const video = file.type.startsWith("video/");
+    setIsVideo(video);
     try {
       const ab = await file.arrayBuffer();
       const ctx = new OfflineAudioContext(2, 1, 48000);
@@ -104,7 +108,7 @@ function Master() {
       setMetrics(m);
       setStage("goal");
     } catch {
-      setError("Não conseguimos ler esse arquivo. Tente um MP3, WAV, M4A ou OGG.");
+      setError("Não conseguimos ler esse arquivo. Tente MP3, WAV, M4A, OGG, MP4 ou WebM.");
     } finally {
       setAnalyzing(false);
     }
@@ -245,15 +249,15 @@ function Master() {
               ) : (
                 <>
                   <Upload className="h-8 w-8 text-accent" />
-                  <p className="font-semibold sm:hidden">Toque para escolher seu áudio</p>
+                  <p className="font-semibold sm:hidden">Toque para escolher áudio ou vídeo</p>
                   <p className="hidden font-semibold sm:block">
-                    Arraste seu áudio aqui ou clique para escolher
+                    Arraste seu áudio ou vídeo aqui, ou clique para escolher
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    MP3, WAV, M4A ou OGG — processado no seu aparelho
+                    MP3, WAV, M4A, OGG, MP4 ou WebM — processado no seu aparelho
                   </p>
                   <span className="mt-2 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground sm:hidden">
-                    <Upload className="h-4 w-4" /> Enviar áudio
+                    <Upload className="h-4 w-4" /> Enviar arquivo
                   </span>
                 </>
               )}
@@ -261,7 +265,7 @@ function Master() {
             <input
               ref={inputRef}
               type="file"
-              accept="audio/*"
+              accept="audio/*,video/mp4,video/webm,video/quicktime"
               className="hidden"
               onChange={(e) => {
                 const f = e.target.files?.[0];
@@ -274,6 +278,7 @@ function Master() {
         {metrics && stage !== "upload" && (
           <p className="mt-6 break-words text-xs text-muted-foreground sm:mt-8">
             <span className="font-semibold text-foreground">{fileName}</span> ·{" "}
+            {isVideo && <><FileVideo className="mr-1 inline h-3.5 w-3.5" /> vídeo · </>}
             {formatClock(metrics.duration)} · {metrics.channels > 1 ? "estéreo" : "mono"} ·{" "}
             {(metrics.sampleRate / 1000).toFixed(1)} kHz
           </p>
@@ -309,6 +314,7 @@ function Master() {
               processed={master.buffer}
               before={metrics}
               after={master.metrics}
+              isVideo={isVideo}
             />
 
             <section className="panel p-4 sm:p-5">
@@ -350,7 +356,11 @@ function Master() {
               )}
             </section>
 
-            <ExportCard buffer={master.buffer} baseName={fileName || "audio-masterizado"} />
+            <ExportCard
+              buffer={master.buffer}
+              baseName={fileName || "audio-masterizado"}
+              originalVideoUrl={isVideo ? originalUrl : undefined}
+            />
 
             <p className="text-xs text-muted-foreground">
               Ganho aplicado na normalização: {master.gainApplied >= 0 ? "+" : ""}

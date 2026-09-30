@@ -11,15 +11,17 @@ type Props = {
   processed: AudioBuffer;
   before: AudioMetrics;
   after: AudioMetrics;
+  isVideo?: boolean;
 };
 
-export function AbPlayer({ originalUrl, processed, before, after }: Props) {
+export function AbPlayer({ originalUrl, processed, before, after, isVideo = false }: Props) {
   const [side, setSide] = useState<"before" | "after">("after");
   const [playing, setPlaying] = useState(false);
   const [pos, setPos] = useState(0);
   const [dur, setDur] = useState(0);
   const aRef = useRef<HTMLAudioElement>(null);
   const bRef = useRef<HTMLAudioElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const processedUrl = useMemo(() => URL.createObjectURL(encodeWav(processed)), [processed]);
   useEffect(() => () => URL.revokeObjectURL(processedUrl), [processedUrl]);
@@ -44,9 +46,11 @@ export function AbPlayer({ originalUrl, processed, before, after }: Props) {
     if (!el) return;
     if (playing) {
       el.pause();
+      videoRef.current?.pause();
       setPlaying(false);
     } else {
       void el.play();
+      if (videoRef.current) void videoRef.current.play();
       setPlaying(true);
     }
   };
@@ -55,6 +59,7 @@ export function AbPlayer({ originalUrl, processed, before, after }: Props) {
     const el = active();
     if (!el) return;
     el.currentTime = v;
+    if (videoRef.current) videoRef.current.currentTime = v;
     setPos(v);
   };
 
@@ -86,6 +91,17 @@ export function AbPlayer({ originalUrl, processed, before, after }: Props) {
         ))}
       </div>
 
+      {isVideo && (
+        <video
+          ref={videoRef}
+          src={originalUrl}
+          muted
+          playsInline
+          preload="metadata"
+          className="mt-4 aspect-video w-full rounded-lg bg-surface-sunken object-contain"
+        />
+      )}
+
       <div className="mt-4 flex items-center gap-3">
         <Button
           size="icon"
@@ -110,15 +126,35 @@ export function AbPlayer({ originalUrl, processed, before, after }: Props) {
         src={originalUrl}
         preload="metadata"
         onLoadedMetadata={(e) => setDur(e.currentTarget.duration || 0)}
-        onTimeUpdate={(e) => side === "before" && setPos(e.currentTarget.currentTime)}
-        onEnded={() => setPlaying(false)}
+        onTimeUpdate={(e) => {
+          if (side === "before") {
+            setPos(e.currentTarget.currentTime);
+            if (videoRef.current && Math.abs(videoRef.current.currentTime - e.currentTarget.currentTime) > 0.3) {
+              videoRef.current.currentTime = e.currentTarget.currentTime;
+            }
+          }
+        }}
+        onEnded={() => {
+          videoRef.current?.pause();
+          setPlaying(false);
+        }}
       />
       <audio
         ref={bRef}
         src={processedUrl}
         preload="metadata"
-        onTimeUpdate={(e) => side === "after" && setPos(e.currentTarget.currentTime)}
-        onEnded={() => setPlaying(false)}
+        onTimeUpdate={(e) => {
+          if (side === "after") {
+            setPos(e.currentTarget.currentTime);
+            if (videoRef.current && Math.abs(videoRef.current.currentTime - e.currentTarget.currentTime) > 0.3) {
+              videoRef.current.currentTime = e.currentTarget.currentTime;
+            }
+          }
+        }}
+        onEnded={() => {
+          videoRef.current?.pause();
+          setPlaying(false);
+        }}
       />
 
       <table className="mt-5 w-full text-xs sm:text-sm">

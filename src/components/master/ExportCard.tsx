@@ -1,17 +1,22 @@
 import { useState } from "react";
-import { Download } from "lucide-react";
+import { Download, Film } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EXPORT_PRESETS, encodeExport, formatBytes, type ExportPresetId } from "@/lib/mastering";
+import { downloadBlob, exportVideoWithAudio } from "@/lib/video-export";
 
 type Props = {
   buffer: AudioBuffer;
   baseName: string;
+  originalVideoUrl?: string | undefined;
 };
 
-export function ExportCard({ buffer, baseName }: Props) {
+export function ExportCard({ buffer, baseName, originalVideoUrl }: Props) {
   const [selected, setSelected] = useState<ExportPresetId>("hifi");
   const [busy, setBusy] = useState(false);
   const [lastSize, setLastSize] = useState<number | null>(null);
+  const [videoBusy, setVideoBusy] = useState(false);
+  const [videoProgress, setVideoProgress] = useState(0);
+  const [videoError, setVideoError] = useState<string | null>(null);
 
   const handleExport = async () => {
     const preset = EXPORT_PRESETS.find((p) => p.id === selected)!;
@@ -27,6 +32,22 @@ export function ExportCard({ buffer, baseName }: Props) {
       setTimeout(() => URL.revokeObjectURL(url), 4000);
     } finally {
       setBusy(false);
+    }
+  };
+
+  const handleVideoExport = async () => {
+    if (!originalVideoUrl) return;
+    setVideoBusy(true);
+    setVideoError(null);
+    setVideoProgress(0);
+    try {
+      const blob = await exportVideoWithAudio(originalVideoUrl, buffer, setVideoProgress);
+      setLastSize(blob.size);
+      downloadBlob(blob, `${baseName}-melhorado.webm`);
+    } catch {
+      setVideoError("Este navegador não conseguiu gerar o vídeo. Tente usar Chrome ou Edge atualizado.");
+    } finally {
+      setVideoBusy(false);
     }
   };
 
@@ -59,6 +80,25 @@ export function ExportCard({ buffer, baseName }: Props) {
           <span className="text-xs text-muted-foreground">Último arquivo: {formatBytes(lastSize)}</span>
         )}
       </div>
+
+      {originalVideoUrl && (
+        <div className="mt-4 border-t border-border/60 pt-4">
+          <Button
+            size="lg"
+            variant="secondary"
+            className="w-full sm:w-auto"
+            onClick={handleVideoExport}
+            disabled={videoBusy || busy}
+          >
+            <Film className="mr-2 h-4 w-4" />
+            {videoBusy ? `Gerando vídeo... ${Math.round(videoProgress)}%` : "Baixar vídeo com áudio melhorado"}
+          </Button>
+          <p className="mt-2 text-xs text-muted-foreground">
+            A imagem original será mantida e o vídeo será salvo em WebM. A geração acompanha a duração do vídeo.
+          </p>
+          {videoError && <p className="mt-2 text-xs text-destructive">{videoError}</p>}
+        </div>
+      )}
 
     </section>
   );
