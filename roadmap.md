@@ -5,3 +5,5 @@
 - [x] Exportar vídeo com a imagem original e o áudio melhorado.
 - [x] Aceitar e exportar vídeo na mesa avançada.
 - [x] Validar compilação e o fluxo no navegador.
+- [x] Renovar a apresentação com prova visual dos recursos de áudio e vídeo.
+- [x] Validar a nova apresentação em desktop e celular.
