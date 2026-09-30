@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - O áudio e o vídeo são processados integralmente no navegador; a exportação de vídeo preserva a imagem original e grava uma nova trilha processada em WebM, sem servidor, para manter a privacidade.
+- A apresentação pública usa prévias visuais construídas a partir dos recursos reais do produto, evitando imagens genéricas e promessas não implementadas.
