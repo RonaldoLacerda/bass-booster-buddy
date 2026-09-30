@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Circle,
   Download,
+  Film,
   Loader2,
   Mic,
   Music,
@@ -54,6 +55,7 @@ import {
 } from "@/lib/custom-presets";
 import { decodeBlob, formatClock, pickRecorderMime } from "@/lib/recorder";
 import { Onboarding } from "@/components/Onboarding";
+import { downloadBlob, exportVideoWithAudio } from "@/lib/video-export";
 
 
 type InputMode = "file" | "mic";
@@ -84,12 +86,15 @@ function Index() {
   const [settings, setSettings] = useState<EqSettings>(DEFAULT_SETTINGS);
   const [fileName, setFileName] = useState("");
   const [audioUrl, setAudioUrl] = useState<string>("");
+  const [isVideo, setIsVideo] = useState(false);
 
   const [playing, setPlaying] = useState(false);
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
   const [bypass, setBypass] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [videoExporting, setVideoExporting] = useState(false);
+  const [videoProgress, setVideoProgress] = useState(0);
   const [activePreset, setActivePreset] = useState("culto");
   const [inputPeak, setInputPeak] = useState<number | null>(null);
   const [format, setFormat] = useState<ExportFormat>("wav");
@@ -341,8 +346,12 @@ function Index() {
 
   const onFile = (file: File) => {
     const url = URL.createObjectURL(file);
-    setAudioUrl(url);
+    setAudioUrl((previous) => {
+      if (previous) URL.revokeObjectURL(previous);
+      return url;
+    });
     setFileName(file.name);
+    setIsVideo(file.type.startsWith("video/"));
     setPlaying(false);
     setCurrent(0);
     setMode("file");
@@ -405,6 +414,27 @@ function Index() {
       toast.error("Não foi possível processar este arquivo.");
     } finally {
       setExporting(false);
+    }
+  };
+
+  const handleVideoExport = async () => {
+    const buf = bufferRef.current;
+    if (!buf || !audioUrl || !isVideo) {
+      toast.error("Vídeo ainda carregando, tente em alguns segundos.");
+      return;
+    }
+    if (!(await ensureQuota())) return;
+    setVideoExporting(true);
+    setVideoProgress(0);
+    try {
+      const rendered = await renderProcessed(buf, settings);
+      const blob = await exportVideoWithAudio(audioUrl, rendered, setVideoProgress);
+      downloadBlob(blob, `${fileName.replace(/\.[^.]+$/, "")} - tratado.webm`);
+      toast.success("Vídeo exportado com o áudio tratado.");
+    } catch {
+      toast.error("Não foi possível gerar o vídeo. Tente usar Chrome ou Edge atualizado.");
+    } finally {
+      setVideoExporting(false);
     }
   };
 
@@ -471,12 +501,12 @@ function Index() {
             <label className="cursor-pointer">
               <input
                 type="file"
-                accept="audio/*"
+                accept="audio/*,video/mp4,video/webm,video/quicktime"
                 className="hidden"
                 onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
               />
               <span className="inline-flex items-center gap-2 rounded-md border border-border bg-secondary px-3 py-2 text-sm font-medium transition-colors hover:bg-muted">
-                <Upload className="h-4 w-4" /> Carregar áudio
+                <Upload className="h-4 w-4" /> Carregar áudio ou vídeo
               </span>
             </label>
           </div>
@@ -574,20 +604,20 @@ function Index() {
         {!audioUrl && (
           <section className="panel flex flex-col items-center gap-3 border border-dashed border-border p-12 text-center">
             <Upload className="h-8 w-8 text-accent" />
-            <h2 className="font-semibold">Carregue um áudio para começar</h2>
+            <h2 className="font-semibold">Carregue um áudio ou vídeo para começar</h2>
             <p className="max-w-md text-sm text-muted-foreground">
-              Escolha um arquivo MP3, WAV, M4A ou OGG do seu aparelho, ou mude a fonte para
+              Escolha MP3, WAV, M4A, OGG, MP4 ou WebM do seu aparelho, ou mude a fonte para
               microfone e grave direto na mesa. Tudo fica no seu navegador.
             </p>
             <label className="cursor-pointer">
               <input
                 type="file"
-                accept="audio/*"
+                accept="audio/*,video/mp4,video/webm,video/quicktime"
                 className="hidden"
                 onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
               />
               <span className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
-                <Upload className="h-4 w-4" /> Escolher áudio
+                <Upload className="h-4 w-4" /> Escolher arquivo
               </span>
             </label>
           </section>
@@ -595,6 +625,15 @@ function Index() {
 
         {/* Transporte */}
         <section className="panel p-5">
+          {isVideo && audioUrl && (
+            <video
+              src={audioUrl}
+              muted
+              playsInline
+              preload="metadata"
+              className="mb-5 aspect-video w-full rounded-lg bg-surface-sunken object-contain"
+            />
+          )}
           <div className="flex flex-wrap items-center gap-4">
             <Button
               size="icon"
@@ -674,7 +713,26 @@ function Index() {
               )}
               Exportar {format === "mp3" ? `MP3 ${bitrate}` : "WAV"}
             </Button>
+            {isVideo && (
+              <Button
+                variant="secondary"
+                onClick={handleVideoExport}
+                disabled={videoExporting || exporting || blocked || !audioUrl}
+              >
+                {videoExporting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Film className="mr-2 h-4 w-4" />
+                )}
+                {videoExporting ? `Gerando vídeo ${Math.round(videoProgress)}%` : "Exportar vídeo"}
+              </Button>
+            )}
           </div>
+          {isVideo && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              A imagem original será mantida e o vídeo tratado será salvo em WebM. A geração acompanha a duração do vídeo.
+            </p>
+          )}
           {inputPeak !== null && (
             <p className="mt-3 font-mono text-xs text-muted-foreground">
               Pico do original: {inputPeak.toFixed(1)} dBFS
