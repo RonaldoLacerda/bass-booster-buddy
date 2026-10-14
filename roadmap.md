@@ -7,3 +7,5 @@
 - [x] Validar compilação e o fluxo no navegador.
 - [x] Renovar a apresentação com prova visual dos recursos de áudio e vídeo.
 - [x] Validar a nova apresentação em desktop e celular.
+- [ ] Revisar e corrigir os achados de SEO e conferir os resultados.
+- [ ] Concluir configuração do Google Search Console, se autorizada.
