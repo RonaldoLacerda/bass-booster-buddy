@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "Entrar ou criar conta | AudioMix" },
@@ -22,8 +23,10 @@ export const Route = createFileRoute("/auth")({
         content: "Crie sua conta grátis e masterize sua primeira faixa em segundos.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://audiomix.app/auth" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://audiomix.app/auth" }],
   }),
   component: AuthPage,
 });

@@ -18,6 +18,7 @@ import { consumeTrack, getAccount } from "@/lib/account.functions";
 import { Onboarding } from "@/components/Onboarding";
 
 export const Route = createFileRoute("/_authenticated/master")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Masterizar áudio | AudioMix" },

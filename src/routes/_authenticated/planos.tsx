@@ -11,6 +11,7 @@ import { getAccount, requestPlan } from "@/lib/account.functions";
 import { PLANS, formatBRL } from "@/lib/plans";
 
 export const Route = createFileRoute("/_authenticated/planos")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Planos e assinatura | AudioMix" },
