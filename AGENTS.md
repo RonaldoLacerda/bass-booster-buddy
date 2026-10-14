@@ -11,3 +11,5 @@
 
 - O áudio e o vídeo são processados integralmente no navegador; a exportação de vídeo preserva a imagem original e grava uma nova trilha processada em WebM, sem servidor, para manter a privacidade.
 - A apresentação pública usa prévias visuais construídas a partir dos recursos reais do produto, evitando imagens genéricas e promessas não implementadas.
+- Derive the sitemap from required route-level staticData.sitemap decisions, exclude the authenticated subtree, and omit lastmod unless an authoritative page-specific content timestamp exists; this prevents stale inventories and fabricated change dates.
+- Keep page titles, descriptions and canonical URLs in leaf route heads, with only sitewide defaults and verification tags at the root; this avoids duplicate canonicals and generic social previews.

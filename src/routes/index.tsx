@@ -30,6 +30,7 @@ const DESCRIPTION =
   "Melhore volume, graves, clareza e dinâmica de áudios e vídeos. Compare antes e depois, use o equalizador profissional e exporte no seu formato. 1 faixa grátis.";
 
 export const Route = createFileRoute("/")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: TITLE },
@@ -37,10 +38,12 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESCRIPTION },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://audiomix.app/" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: TITLE },
       { name: "twitter:description", content: DESCRIPTION },
     ],
+    links: [{ rel: "canonical", href: "https://audiomix.app/" }],
     scripts: [
       {
         type: "application/ld+json",

@@ -61,15 +61,16 @@ import { downloadBlob, exportVideoWithAudio } from "@/lib/video-export";
 type InputMode = "file" | "mic";
 
 export const Route = createFileRoute("/_authenticated/studio")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
-      { title: "Equalizador e gravador de áudio | Modo avançado" },
+      { title: "Equalizador e gravador de áudio e vídeo | AudioMix" },
       {
         name: "description",
         content:
           "Equalize qualquer gravação com EQ de 10 bandas, presets prontos e personalizados, grave o som já mixado do microfone ou de um arquivo e exporte em WAV ou MP3 320 kbps.",
       },
-      { property: "og:title", content: "Mesa de masterização — modo avançado" },
+      { property: "og:title", content: "Equalizador e gravador de áudio e vídeo | AudioMix" },
       {
         property: "og:description",
         content:

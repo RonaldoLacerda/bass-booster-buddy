@@ -10,6 +10,7 @@ import { getAccount, listPlanRequests, resolvePlanRequest } from "@/lib/account.
 import { formatBRL } from "@/lib/plans";
 
 export const Route = createFileRoute("/_authenticated/admin")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Solicitações de plano | AudioMix" },
