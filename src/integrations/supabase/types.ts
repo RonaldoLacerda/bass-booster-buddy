@@ -73,30 +73,51 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          cancel_at_period_end: boolean
+          environment: string | null
           expires_at: string | null
           id: string
+          paddle_customer_id: string | null
+          paddle_status: string | null
+          paddle_subscription_id: string | null
           plan_id: string
+          price_id: string | null
           started_at: string
           status: string
           tracks_limit: number
+          updated_at: string
           user_id: string
         }
         Insert: {
+          cancel_at_period_end?: boolean
+          environment?: string | null
           expires_at?: string | null
           id?: string
+          paddle_customer_id?: string | null
+          paddle_status?: string | null
+          paddle_subscription_id?: string | null
           plan_id: string
+          price_id?: string | null
           started_at?: string
           status?: string
           tracks_limit: number
+          updated_at?: string
           user_id: string
         }
         Update: {
+          cancel_at_period_end?: boolean
+          environment?: string | null
           expires_at?: string | null
           id?: string
+          paddle_customer_id?: string | null
+          paddle_status?: string | null
+          paddle_subscription_id?: string | null
           plan_id?: string
+          price_id?: string | null
           started_at?: string
           status?: string
           tracks_limit?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
