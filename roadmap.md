@@ -8,4 +8,4 @@
 - [x] Renovar a apresentação com prova visual dos recursos de áudio e vídeo.
 - [x] Validar a nova apresentação em desktop e celular.
 - [x] Revisar e corrigir os achados de SEO e conferir os resultados.
-- [ ] Concluir configuração do Google Search Console, se autorizada.
+- [x] Concluir configuração do Google Search Console, verificar propriedade e enviar o sitemap.
