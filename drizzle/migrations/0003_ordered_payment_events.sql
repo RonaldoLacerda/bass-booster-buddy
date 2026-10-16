@@ -1,0 +1,9 @@
+create or replace function public.apply_payment_subscription(payment jsonb) returns void language plpgsql security definer set search_path = public as $$
+begin
+ insert into public.subscriptions(user_id,paddle_subscription_id,paddle_customer_id,plan_id,price_id,tracks_limit,paddle_status,status,started_at,expires_at,cancel_at_period_end,environment,updated_at,webhook_occurred_at)
+ values((payment->>'user_id')::uuid,payment->>'paddle_subscription_id',payment->>'paddle_customer_id',payment->>'plan_id',payment->>'price_id',(payment->>'tracks_limit')::integer,payment->>'paddle_status',payment->>'status',(payment->>'started_at')::timestamptz,(payment->>'expires_at')::timestamptz,(payment->>'cancel_at_period_end')::boolean,payment->>'environment',(payment->>'updated_at')::timestamptz,(payment->>'webhook_occurred_at')::timestamptz)
+ on conflict(paddle_subscription_id) do update set paddle_customer_id=excluded.paddle_customer_id,plan_id=excluded.plan_id,price_id=excluded.price_id,tracks_limit=excluded.tracks_limit,paddle_status=excluded.paddle_status,status=excluded.status,started_at=excluded.started_at,expires_at=excluded.expires_at,cancel_at_period_end=excluded.cancel_at_period_end,updated_at=excluded.updated_at,webhook_occurred_at=excluded.webhook_occurred_at
+ where subscriptions.environment=excluded.environment and (subscriptions.webhook_occurred_at is null or subscriptions.webhook_occurred_at < excluded.webhook_occurred_at);
+end $$;
+revoke all on function public.apply_payment_subscription(jsonb) from public,anon,authenticated;
+grant execute on function public.apply_payment_subscription(jsonb) to service_role;

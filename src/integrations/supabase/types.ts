@@ -178,6 +178,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_payment_subscription: {
+        Args: { payment: Json }
+        Returns: undefined
+      }
       consume_audio_track: {
         Args: {
           p_environment: string
