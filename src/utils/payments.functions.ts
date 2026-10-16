@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { getPaddleEnvironment } from "@/lib/paddle-env";
+import { getPaddleEnvironment, PLAN_PRICE_IDS } from "@/lib/paddle-env";
 
 export const resolvePaddlePrice = createServerFn({ method: "GET" })
   .inputValidator((data: { priceId: string; environment: "sandbox" | "live" }) => ({
@@ -8,8 +8,10 @@ export const resolvePaddlePrice = createServerFn({ method: "GET" })
     environment: data?.environment === "live" ? ("live" as const) : ("sandbox" as const),
   }))
   .handler(async ({ data }) => {
+    if (!Object.values(PLAN_PRICE_IDS).includes(data.priceId)) throw new Error("Invalid price");
     const { gatewayFetch } = await import("@/lib/paddle.server");
     const response = await gatewayFetch(data.environment, `/prices?external_id=${encodeURIComponent(data.priceId)}`);
+    if (!response.ok) throw new Error("Price unavailable");
     const result = await response.json();
     if (!result.data?.length) throw new Error("Price not found");
     return result.data[0].id as string;

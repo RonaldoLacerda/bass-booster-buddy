@@ -1,41 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { hasAccess, planIdFromProduct } from "@/lib/paddle-env";
-import { planById } from "@/lib/plans";
+import { subscriptionRecord } from "@/lib/payment-subscription";
 import type { PaddleEnv } from "@/lib/paddle.server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function upsertSubscription(data: any, env: PaddleEnv) {
+async function upsertSubscription(data: any, env: PaddleEnv, occurredAt: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const userId = data.customData?.userId;
-  const item = data.items?.[0];
-  const productId = item?.product?.importMeta?.externalId ?? item?.product?.externalId;
-  const priceId = item?.price?.importMeta?.externalId ?? item?.price?.externalId;
-  const planId = productId ? planIdFromProduct(productId) : null;
-  const plan = planId ? planById(planId) : undefined;
-  if (!userId || !plan) {
-    console.warn("Skipping subscription: missing userId or plan", { productId });
-    return;
-  }
-  const status: string = data.status;
-  const periodEnd: string | null = data.currentBillingPeriod?.endsAt ?? null;
-  const { error } = await supabaseAdmin.from("subscriptions").upsert(
-    {
-      user_id: userId,
-      paddle_subscription_id: data.id,
-      paddle_customer_id: data.customerId,
-      plan_id: plan.id,
-      price_id: priceId,
-      tracks_limit: plan.tracks,
-      paddle_status: status,
-      status: hasAccess(status) ? "active" : "inactive",
-      started_at: data.currentBillingPeriod?.startsAt ?? data.createdAt ?? new Date().toISOString(),
-      expires_at: periodEnd,
-      cancel_at_period_end: data.scheduledChange?.action === "cancel",
-      environment: env,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "paddle_subscription_id" },
-  );
+  const { data: prior, error: readError } = await supabaseAdmin.from("subscriptions")
+    .select("expires_at, started_at").eq("paddle_subscription_id", data.id).eq("environment", env).maybeSingle();
+  if (readError) throw readError;
+  const record = subscriptionRecord(data, env, occurredAt, prior?.expires_at, prior?.started_at);
+  const { error } = await supabaseAdmin.rpc("apply_payment_subscription", { payment: record });
   if (error) throw error;
 }
 
@@ -45,7 +19,8 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
     handlers: {
       POST: async ({ request }) => {
         const url = new URL(request.url);
-        const env: PaddleEnv = url.searchParams.get("env") === "live" ? "live" : "sandbox";
+        const env = url.searchParams.get("env");
+        if (env !== "sandbox" && env !== "live") return new Response("Invalid environment", { status: 400 });
         try {
           const { verifyWebhook, EventName } = await import("@/lib/paddle.server");
           const event = await verifyWebhook(request, env);
@@ -53,7 +28,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             case EventName.SubscriptionCreated:
             case EventName.SubscriptionUpdated:
             case EventName.SubscriptionCanceled:
-              await upsertSubscription(event.data, env);
+              await upsertSubscription(event.data, env, event.occurredAt);
               break;
             default:
               console.log("Unhandled event:", event.eventType);
