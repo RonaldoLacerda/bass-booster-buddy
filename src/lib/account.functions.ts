@@ -2,8 +2,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 import { FREE_TRACKS, planById } from "./plans";
+import { getPaddleEnvironment } from "./paddle-env";
 
 export type AccountState = {
+  userId: string;
   email: string;
   isAdmin: boolean;
   planId: string;
@@ -12,6 +14,9 @@ export type AccountState = {
   used: number;
   remaining: number;
   periodLabel: string;
+  paymentStatus: string | null;
+  hasPaymentSubscription: boolean;
+  cancelAtPeriodEnd: boolean;
   pendingRequest: { planName: string; createdAt: string } | null;
 };
 
@@ -29,9 +34,11 @@ export const getAccount = createServerFn({ method: "GET" })
     const [{ data: sub }, { data: roles }, { data: pending }] = await Promise.all([
       supabase
         .from("subscriptions")
-        .select("plan_id, tracks_limit, expires_at")
+        .select("plan_id, tracks_limit, expires_at, started_at, paddle_status, paddle_subscription_id, cancel_at_period_end")
         .eq("user_id", userId)
         .eq("status", "active")
+        .or(`environment.eq.${getPaddleEnvironment()},and(environment.is.null,paddle_subscription_id.is.null)`)
+        .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
         .order("started_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
@@ -54,19 +61,22 @@ export const getAccount = createServerFn({ method: "GET" })
         .from("track_usages")
         .select("id", { count: "exact", head: true })
         .eq("user_id", userId)
-        .gte("created_at", monthStart());
+        .or(`environment.eq.${getPaddleEnvironment()},environment.is.null`)
+        .gte("created_at", active.paddle_subscription_id ? active.started_at : monthStart());
       used = count ?? 0;
     } else {
       const { count } = await supabase
         .from("track_usages")
         .select("id", { count: "exact", head: true })
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .or(`environment.eq.${getPaddleEnvironment()},environment.is.null`);
       used = count ?? 0;
     }
 
     const limit = active ? active.tracks_limit : FREE_TRACKS;
 
     return {
+      userId,
       email,
       isAdmin: (roles ?? []).some((r) => r.role === "admin"),
       planId: active ? active.plan_id : "free",
@@ -75,6 +85,9 @@ export const getAccount = createServerFn({ method: "GET" })
       used,
       remaining: Math.max(0, limit - used),
       periodLabel: active ? "neste mês" : "no total (teste gratuito)",
+      paymentStatus: active?.paddle_status ?? null,
+      hasPaymentSubscription: Boolean(active?.paddle_subscription_id),
+      cancelAtPeriodEnd: Boolean(active?.cancel_at_period_end),
       pendingRequest: pending ? { planName: pending.plan_name, createdAt: pending.created_at } : null,
     };
   });
@@ -86,45 +99,13 @@ export const consumeTrack = createServerFn({ method: "POST" })
     goalId: String(data?.goalId ?? "").slice(0, 50),
   }))
   .handler(async ({ data, context }): Promise<{ ok: boolean; remaining: number; reason?: string }> => {
-    const { supabase, userId } = context;
-
-    const { data: sub } = await supabase
-      .from("subscriptions")
-      .select("tracks_limit, expires_at")
-      .eq("user_id", userId)
-      .eq("status", "active")
-      .order("started_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    const active = sub && (!sub.expires_at || new Date(sub.expires_at) > new Date()) ? sub : null;
-    const limit = active ? active.tracks_limit : FREE_TRACKS;
-
-    const query = supabase
-      .from("track_usages")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", userId);
-    const { count } = active ? await query.gte("created_at", monthStart()) : await query;
-    const used = count ?? 0;
-
-    if (used >= limit) {
-      return {
-        ok: false,
-        remaining: 0,
-        reason: active
-          ? "Você já usou todas as faixas do seu plano neste mês."
-          : "Seu teste gratuito já foi usado. Escolha um plano para continuar.",
-      };
-    }
-
-    const { error } = await supabase.from("track_usages").insert({
-      user_id: userId,
-      file_name: data.fileName || null,
-      goal_id: data.goalId || null,
+    const { data: result, error } = await context.supabase.rpc("consume_audio_track", {
+      p_environment: getPaddleEnvironment(),
+      p_file_name: data.fileName || undefined,
+      p_goal_id: data.goalId || undefined,
     });
-    if (error) return { ok: false, remaining: limit - used, reason: "Não foi possível registrar o uso." };
-
-    return { ok: true, remaining: Math.max(0, limit - used - 1) };
+    if (error) throw new Error("Não foi possível registrar o uso.");
+    return result as { ok: boolean; remaining: number; reason?: string };
   });
 
 export const requestPlan = createServerFn({ method: "POST" })
