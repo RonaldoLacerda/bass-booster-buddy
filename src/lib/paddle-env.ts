@@ -13,7 +13,7 @@ export const PLAN_PRICE_IDS: Record<string, string> = {
 
 export function planIdFromProduct(productId: string): string | null {
   const id = productId.replace(/_plan$/, "");
-  return id in PLAN_PRICE_IDS ? id : null;
+  return Object.hasOwn(PLAN_PRICE_IDS, id) ? id : null;
 }
 
 /** Access status: Paddle keeps retrying past_due, canceled keeps access until period end. */

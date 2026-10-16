@@ -9,3 +9,7 @@
 - [x] Validar a nova apresentação em desktop e celular.
 - [x] Revisar e corrigir os achados de SEO e conferir os resultados.
 - [x] Concluir configuração do Google Search Console, verificar propriedade e enviar o sitemap.
+- [ ] Conectar contratação, liberação automática e gerenciamento de pagamentos.
+- [ ] Validar pagamentos e cotas sem misturar teste e produção.
+- [ ] Criar políticas públicas (aguardando nome legal do vendedor).
+- [ ] Ativar pagamentos reais (aguardando publicação e aprovação do Paddle).
