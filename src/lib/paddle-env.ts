@@ -1,5 +1,5 @@
 // Shared (client + server): environment derived from the build-time token.
-const token = import.meta.env.VITE_PAYMENTS_CLIENT_TOKEN as string | undefined;
+const token = import.meta.env['VITE_PAYMENTS_CLIENT_TOKEN'] as string | undefined;
 
 export function getPaddleEnvironment(): "sandbox" | "live" {
   return token?.startsWith("test_") ? "sandbox" : "live";

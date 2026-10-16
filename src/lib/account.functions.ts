@@ -101,8 +101,8 @@ export const consumeTrack = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<{ ok: boolean; remaining: number; reason?: string }> => {
     const { data: result, error } = await context.supabase.rpc("consume_audio_track", {
       p_environment: getPaddleEnvironment(),
-      p_file_name: data.fileName || undefined,
-      p_goal_id: data.goalId || undefined,
+      p_file_name: data.fileName,
+      p_goal_id: data.goalId,
     });
     if (error) throw new Error("Não foi possível registrar o uso.");
     return result as { ok: boolean; remaining: number; reason?: string };

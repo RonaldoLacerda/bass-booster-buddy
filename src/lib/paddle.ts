@@ -3,7 +3,7 @@ import { getPaddleEnvironment } from "@/lib/paddle-env";
 
 export { getPaddleEnvironment };
 
-const clientToken = import.meta.env.VITE_PAYMENTS_CLIENT_TOKEN as string | undefined;
+const clientToken = import.meta.env['VITE_PAYMENTS_CLIENT_TOKEN'] as string | undefined;
 
 declare global {
   interface Window {
