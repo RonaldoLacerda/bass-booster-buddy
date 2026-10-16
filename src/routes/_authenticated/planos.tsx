@@ -1,14 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppNav } from "@/components/AppNav";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
-import { getAccount, requestPlan } from "@/lib/account.functions";
+import { getAccount } from "@/lib/account.functions";
 import { PLANS, formatBRL } from "@/lib/plans";
+import { openPlanCheckout } from "@/lib/paddle";
+import { getPaddleEnvironment, PLAN_PRICE_IDS } from "@/lib/paddle-env";
+import { getCustomerPortalUrl } from "@/utils/payments.functions";
 
 export const Route = createFileRoute("/_authenticated/planos")({
   staticData: { sitemap: false },
@@ -30,23 +33,33 @@ export const Route = createFileRoute("/_authenticated/planos")({
 });
 
 function PlanosPage() {
-  const queryClient = useQueryClient();
-  const { data: account } = useQuery({ queryKey: ["account"], queryFn: () => getAccount() });
-  const request = useServerFn(requestPlan);
+  const { data: account, isError } = useQuery({ queryKey: ["account"], queryFn: () => getAccount(), refetchInterval: 5000 });
+  const portal = useServerFn(getCustomerPortalUrl);
 
   const mutation = useMutation({
-    mutationFn: (planId: string) => request({ data: { planId } }),
-    onSuccess: (result) => {
-      if (result.ok) toast.success(result.message);
-      else toast.error(result.message);
-      void queryClient.invalidateQueries({ queryKey: ["account"] });
+    mutationFn: async (planId: string) => {
+      if (!account || !PLAN_PRICE_IDS[planId]) throw new Error("Conta indisponível");
+      await openPlanCheckout({ priceId: PLAN_PRICE_IDS[planId], userId: account.userId, email: account.email });
     },
-    onError: () => toast.error("Não foi possível enviar a solicitação."),
+    onError: () => toast.error("Não foi possível abrir o pagamento. Tente novamente em instantes."),
+  });
+  const manage = useMutation({
+    mutationFn: () => portal(),
+    onSuccess: ({ url }) => {
+      if (url) window.open(url, "_blank", "noopener,noreferrer");
+      else toast.error("Nenhuma assinatura encontrada para gerenciar.");
+    },
+    onError: () => toast.error("Não foi possível abrir sua assinatura. Tente novamente."),
   });
 
   return (
     <>
       <AppNav />
+      {getPaddleEnvironment() === "sandbox" && (
+        <div className="border-b border-accent/30 bg-accent/10 px-4 py-2 text-center text-sm text-foreground">
+          Pagamentos em modo de teste — nenhuma cobrança real. <a className="underline" href="https://docs.lovable.dev/features/payments#test-and-live-environments" target="_blank" rel="noopener noreferrer">Saiba mais</a>
+        </div>
+      )}
       <Toaster />
       <main className="mx-auto max-w-5xl px-4 py-10">
         <h1 className="text-3xl font-bold tracking-tight">Planos</h1>
@@ -55,6 +68,14 @@ function PlanosPage() {
           {account ? `${account.used}/${account.limit} faixas usadas ${account.periodLabel}` : ""}
         </p>
 
+        {isError && <p role="alert" className="mt-4 text-destructive">Não foi possível carregar sua conta. Atualize a página.</p>}
+        {account?.hasPaymentSubscription && (
+          <Button variant="outline" className="mt-4" disabled={manage.isPending} onClick={() => manage.mutate()}>
+            {manage.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2 h-4 w-4" />} Gerenciar assinatura
+          </Button>
+        )}
+        {account?.paymentStatus === "past_due" && <p role="alert" className="mt-4 text-sm text-destructive">Pagamento pendente. Atualize sua forma de pagamento em Gerenciar assinatura.</p>}
+        {account?.cancelAtPeriodEnd && <p className="mt-4 text-sm text-muted-foreground">Cancelamento agendado. Seu plano permanece disponível até o fim do período pago.</p>}
         {account?.pendingRequest && (
           <p className="mt-4 rounded-lg border border-accent/50 bg-accent/10 p-3 text-sm">
             Você já tem uma solicitação pendente do plano <strong>{account.pendingRequest.planName}</strong>. Vamos
@@ -82,7 +103,7 @@ function PlanosPage() {
               <Button
                 className="mt-6"
                 variant={plan.highlight ? "default" : "outline"}
-                disabled={mutation.isPending || account?.planId === plan.id}
+                disabled={!account || mutation.isPending || account.hasPaymentSubscription || account.planId === plan.id}
                 onClick={() => mutation.mutate(plan.id)}
               >
                 {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -93,8 +114,8 @@ function PlanosPage() {
         </div>
 
         <p className="mt-6 text-xs text-muted-foreground">
-          Ao clicar em Contratar registramos sua solicitação e nossa equipe libera o plano manualmente — o
-          pagamento é combinado por e-mail nesta fase de testes.
+          Assinatura mensal com renovação automática. Seu plano é liberado após a confirmação do pagamento pelo Paddle.
+          Cancelamento e comprovantes em Gerenciar assinatura. Para trocar de plano, cancele o atual e contrate outro após o fim do período pago.
         </p>
       </main>
     </>
