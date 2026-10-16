@@ -87,6 +87,7 @@ export type Database = {
           tracks_limit: number
           updated_at: string
           user_id: string
+          webhook_occurred_at: string | null
         }
         Insert: {
           cancel_at_period_end?: boolean
@@ -103,6 +104,7 @@ export type Database = {
           tracks_limit: number
           updated_at?: string
           user_id: string
+          webhook_occurred_at?: string | null
         }
         Update: {
           cancel_at_period_end?: boolean
@@ -119,12 +121,14 @@ export type Database = {
           tracks_limit?: number
           updated_at?: string
           user_id?: string
+          webhook_occurred_at?: string | null
         }
         Relationships: []
       }
       track_usages: {
         Row: {
           created_at: string
+          environment: string | null
           file_name: string | null
           goal_id: string | null
           id: string
@@ -132,6 +136,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          environment?: string | null
           file_name?: string | null
           goal_id?: string | null
           id?: string
@@ -139,6 +144,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          environment?: string | null
           file_name?: string | null
           goal_id?: string | null
           id?: string
@@ -172,6 +178,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      consume_audio_track: {
+        Args: {
+          p_environment: string
+          p_file_name?: string
+          p_goal_id?: string
+        }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
