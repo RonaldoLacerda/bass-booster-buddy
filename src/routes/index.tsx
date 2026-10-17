@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 
 import { ProductPreview } from "@/components/landing/ProductPreview";
+import { PolicyLinks } from "@/components/LegalPage";
 import { Button } from "@/components/ui/button";
 import { FREE_TRACKS, PLANS, formatBRL } from "@/lib/plans";
 
@@ -369,6 +370,7 @@ function Landing() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-xs text-muted-foreground sm:flex-row">
           <span className="flex items-center gap-2 font-semibold text-foreground"><img src="/favicon.png" alt="" className="h-5 w-5" /> AudioMix</span>
           <p>Áudio e vídeo processados no seu aparelho · {new Date().getFullYear()}</p>
+          <PolicyLinks />
         </div>
       </footer>
     </div>

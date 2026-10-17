@@ -5,6 +5,7 @@ import { Check, Loader2, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppNav } from "@/components/AppNav";
+import { PolicyLinks } from "@/components/LegalPage";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { getAccount } from "@/lib/account.functions";
@@ -117,6 +118,7 @@ function PlanosPage() {
           Assinatura mensal com renovação automática. Seu plano é liberado após a confirmação do pagamento pelo Paddle.
           Cancelamento e comprovantes em Gerenciar assinatura. Para trocar de plano, cancele o atual e contrate outro após o fim do período pago.
         </p>
+        <div className="mt-6"><PolicyLinks /></div>
       </main>
     </>
   );
