@@ -9,7 +9,8 @@
 - [x] Validar a nova apresentação em desktop e celular.
 - [x] Revisar e corrigir os achados de SEO e conferir os resultados.
 - [x] Concluir configuração do Google Search Console, verificar propriedade e enviar o sitemap.
-- [ ] Conectar contratação, liberação automática e gerenciamento de pagamentos.
-- [ ] Validar pagamentos e cotas sem misturar teste e produção.
+- [x] Conectar contratação, liberação automática e gerenciamento de pagamentos.
+- [x] Validar abertura do checkout, regras de preço/cota e rejeição de webhook sem assinatura.
+- [ ] Confirmar compra completa e liberação pelo webhook (pagamento de teste precisa ser concluído manualmente).
 - [ ] Criar políticas públicas (aguardando nome legal do vendedor).
 - [ ] Ativar pagamentos reais (aguardando publicação e aprovação do Paddle).
