@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { PolicyLinks } from "@/components/LegalPage";
 
 export const Route = createFileRoute("/auth")({
   staticData: { sitemap: true },
@@ -185,6 +186,10 @@ function AuthPage() {
           >
             {mode === "login" ? "Não tenho conta — criar agora" : "Já tenho conta — entrar"}
           </button>
+        </div>
+        <div className="mt-6 space-y-3">
+          <p className="text-center text-xs text-muted-foreground">Ao criar uma conta ou usar o AudioMix, você aceita os Termos de uso.</p>
+          <PolicyLinks />
         </div>
       </div>
     </main>

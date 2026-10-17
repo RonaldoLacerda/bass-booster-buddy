@@ -12,5 +12,5 @@
 - [x] Conectar contratação, liberação automática e gerenciamento de pagamentos.
 - [x] Validar abertura do checkout, regras de preço/cota e rejeição de webhook sem assinatura.
 - [ ] Confirmar compra completa e liberação pelo webhook (pagamento de teste precisa ser concluído manualmente).
-- [ ] Criar políticas públicas (aguardando nome legal do vendedor).
+- [x] Criar políticas públicas com o nome legal fornecido e links na apresentação, cadastro e planos.
 - [ ] Ativar pagamentos reais (aguardando publicação e aprovação do Paddle).
