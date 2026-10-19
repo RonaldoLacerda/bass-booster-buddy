@@ -17,7 +17,6 @@ export type AccountState = {
   paymentStatus: string | null;
   hasPaymentSubscription: boolean;
   cancelAtPeriodEnd: boolean;
-  pendingRequest: { planName: string; createdAt: string } | null;
 };
 
 function monthStart() {
@@ -31,7 +30,7 @@ export const getAccount = createServerFn({ method: "GET" })
     const { supabase, userId, claims } = context;
     const email = (claims as { email?: string }).email ?? "";
 
-    const [{ data: sub }, { data: roles }, { data: pending }] = await Promise.all([
+    const [{ data: sub }, { data: roles }] = await Promise.all([
       supabase
         .from("subscriptions")
         .select("plan_id, tracks_limit, expires_at, started_at, paddle_status, paddle_subscription_id, cancel_at_period_end")
@@ -43,14 +42,6 @@ export const getAccount = createServerFn({ method: "GET" })
         .limit(1)
         .maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", userId),
-      supabase
-        .from("plan_requests")
-        .select("plan_name, created_at")
-        .eq("user_id", userId)
-        .eq("status", "pendente")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
     ]);
 
     const active = sub && (!sub.expires_at || new Date(sub.expires_at) > new Date()) ? sub : null;
@@ -88,7 +79,6 @@ export const getAccount = createServerFn({ method: "GET" })
       paymentStatus: active?.paddle_status ?? null,
       hasPaymentSubscription: Boolean(active?.paddle_subscription_id),
       cancelAtPeriodEnd: Boolean(active?.cancel_at_period_end),
-      pendingRequest: pending ? { planName: pending.plan_name, createdAt: pending.created_at } : null,
     };
   });
 
@@ -108,93 +98,3 @@ export const consumeTrack = createServerFn({ method: "POST" })
     return result as { ok: boolean; remaining: number; reason?: string };
   });
 
-export const requestPlan = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data: { planId: string; note?: string }) => ({
-    planId: String(data?.planId ?? ""),
-    note: String(data?.note ?? "").slice(0, 500),
-  }))
-  .handler(async ({ data, context }): Promise<{ ok: boolean; message: string }> => {
-    const plan = planById(data.planId);
-    if (!plan) return { ok: false, message: "Plano inválido." };
-
-    const { supabase, userId, claims } = context;
-    const email = (claims as { email?: string }).email ?? "";
-
-    const { error } = await supabase.from("plan_requests").insert({
-      user_id: userId,
-      email,
-      plan_id: plan.id,
-      plan_name: plan.name,
-      price: plan.price,
-      note: data.note || null,
-    });
-    if (error) return { ok: false, message: "Não conseguimos registrar sua solicitação." };
-
-    return { ok: true, message: "Solicitação enviada! Vamos entrar em contato pelo seu e-mail." };
-  });
-
-export type PlanRequestRow = {
-  id: string;
-  email: string;
-  plan_name: string;
-  plan_id: string;
-  price: number;
-  status: string;
-  note: string | null;
-  created_at: string;
-};
-
-export const listPlanRequests = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<PlanRequestRow[]> => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Acesso restrito");
-
-    const { data } = await supabase
-      .from("plan_requests")
-      .select("id, email, plan_name, plan_id, price, status, note, created_at")
-      .order("created_at", { ascending: false })
-      .limit(200);
-
-    return (data ?? []).map((r) => ({ ...r, price: Number(r.price) }));
-  });
-
-export const resolvePlanRequest = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data: { id: string; status: "pendente" | "aprovado" | "recusado" }) => ({
-    id: String(data?.id ?? ""),
-    status: data?.status,
-  }))
-  .handler(async ({ data, context }): Promise<{ ok: boolean }> => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Acesso restrito");
-    if (!["pendente", "aprovado", "recusado"].includes(data.status)) return { ok: false };
-
-    const { data: row, error } = await supabase
-      .from("plan_requests")
-      .update({ status: data.status })
-      .eq("id", data.id)
-      .select("user_id, plan_id")
-      .maybeSingle();
-    if (error || !row) return { ok: false };
-
-    if (data.status === "aprovado") {
-      const plan = planById(row.plan_id);
-      if (plan) {
-        const expires = new Date();
-        expires.setUTCMonth(expires.getUTCMonth() + 1);
-        await supabase.from("subscriptions").insert({
-          user_id: row.user_id,
-          plan_id: plan.id,
-          tracks_limit: plan.tracks,
-          status: "active",
-          expires_at: expires.toISOString(),
-        });
-      }
-    }
-
-    return { ok: true };
-  });
