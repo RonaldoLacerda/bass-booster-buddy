@@ -26,4 +26,13 @@ describe("AudioMix payment rules", () => {
   test("missing catalog metadata is rejected", () => {
     expect(() => subscriptionRecord({ ...event(), items: [] }, "live", "2026-01-01T00:00:00Z")).toThrow();
   });
+  test("mid-period upgrade to Banda raises quota to 12 and keeps the billing period start", () => {
+    const r = subscriptionRecord(event("banda"), "live", "2026-01-15T00:00:00Z");
+    expect(r.tracks_limit).toBe(12);
+    expect(r.started_at).toBe("2026-01-01T00:00:00Z");
+  });
+  test("renewal moves the quota period start to the new billing period", () => {
+    const renewed = { ...event(), currentBillingPeriod: { startsAt: "2026-02-01T00:00:00Z", endsAt: "2099-03-01T00:00:00Z" } };
+    expect(subscriptionRecord(renewed, "live", "2026-02-01T00:00:00Z").started_at).toBe("2026-02-01T00:00:00Z");
+  });
 });
