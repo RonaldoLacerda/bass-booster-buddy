@@ -16,7 +16,6 @@ import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as ReembolsoRouteImport } from './routes/reembolso'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermosRouteImport } from './routes/termos'
-import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedMasterRouteImport } from './routes/_authenticated/master'
 import { Route as AuthenticatedPlanosRouteImport } from './routes/_authenticated/planos'
 import { Route as AuthenticatedStudioRouteImport } from './routes/_authenticated/studio'
@@ -56,11 +55,6 @@ const TermosRoute = TermosRouteImport.update({
   path: '/termos',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedMasterRoute = AuthenticatedMasterRouteImport.update({
   id: '/master',
   path: '/master',
@@ -90,7 +84,6 @@ export interface FileRoutesByFullPath {
   '/reembolso': typeof ReembolsoRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
-  '/admin': typeof AuthenticatedAdminRoute
   '/master': typeof AuthenticatedMasterRoute
   '/planos': typeof AuthenticatedPlanosRoute
   '/studio': typeof AuthenticatedStudioRoute
@@ -103,7 +96,6 @@ export interface FileRoutesByTo {
   '/reembolso': typeof ReembolsoRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
-  '/admin': typeof AuthenticatedAdminRoute
   '/master': typeof AuthenticatedMasterRoute
   '/planos': typeof AuthenticatedPlanosRoute
   '/studio': typeof AuthenticatedStudioRoute
@@ -118,7 +110,6 @@ export interface FileRoutesById {
   '/reembolso': typeof ReembolsoRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/master': typeof AuthenticatedMasterRoute
   '/_authenticated/planos': typeof AuthenticatedPlanosRoute
   '/_authenticated/studio': typeof AuthenticatedStudioRoute
@@ -133,7 +124,6 @@ export interface FileRouteTypes {
     | '/reembolso'
     | '/sitemap.xml'
     | '/termos'
-    | '/admin'
     | '/master'
     | '/planos'
     | '/studio'
@@ -146,7 +136,6 @@ export interface FileRouteTypes {
     | '/reembolso'
     | '/sitemap.xml'
     | '/termos'
-    | '/admin'
     | '/master'
     | '/planos'
     | '/studio'
@@ -160,7 +149,6 @@ export interface FileRouteTypes {
     | '/reembolso'
     | '/sitemap.xml'
     | '/termos'
-    | '/_authenticated/admin'
     | '/_authenticated/master'
     | '/_authenticated/planos'
     | '/_authenticated/studio'
@@ -229,13 +217,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermosRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/admin': {
-      id: '/_authenticated/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AuthenticatedAdminRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/master': {
       id: '/_authenticated/master'
       path: '/master'
@@ -268,14 +249,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedMasterRoute: typeof AuthenticatedMasterRoute
   AuthenticatedPlanosRoute: typeof AuthenticatedPlanosRoute
   AuthenticatedStudioRoute: typeof AuthenticatedStudioRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedMasterRoute: AuthenticatedMasterRoute,
   AuthenticatedPlanosRoute: AuthenticatedPlanosRoute,
   AuthenticatedStudioRoute: AuthenticatedStudioRoute,
