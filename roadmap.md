@@ -13,4 +13,7 @@
 - [x] Validar abertura do checkout, regras de preço/cota e rejeição de webhook sem assinatura.
 - [ ] Confirmar compra completa e liberação pelo webhook (pagamento de teste precisa ser concluído manualmente).
 - [x] Criar políticas públicas com o nome legal fornecido e links na apresentação, cadastro e planos.
-- [ ] Ativar pagamentos reais (aguardando publicação e aprovação do Paddle).
+- [ ] Ativar pagamentos reais (aguardando publicação e aprovação do Paddle).- [x] Troca de plano imediata com cobrança proporcional.
+- [x] Remover pedido manual de plano e painel de solicitações.
+- [x] Recuperação de senha por e-mail.
+- [x] Confirmação visível após o pagamento e bloqueio de compra duplicada.

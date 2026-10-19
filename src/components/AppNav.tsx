@@ -33,11 +33,6 @@ export function AppNav() {
         <Link to="/planos" className="text-muted-foreground hover:text-foreground">
           Planos
         </Link>
-        {account?.isAdmin && (
-          <Link to="/admin" className="text-muted-foreground hover:text-foreground">
-            Solicitações
-          </Link>
-        )}
         <div className="ml-auto flex items-center gap-3">
           {account && (
             <span className="text-xs text-muted-foreground">

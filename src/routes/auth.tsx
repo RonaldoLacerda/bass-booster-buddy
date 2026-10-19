@@ -175,6 +175,29 @@ function AuthPage() {
             </Button>
           </form>
 
+          {mode === "login" && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={async () => {
+                setError(null);
+                setInfo(null);
+                const emailError = validateEmail(email);
+                if (emailError) return setError("Digite seu e-mail acima para receber o link de nova senha.");
+                setBusy(true);
+                const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+                  redirectTo: `${window.location.origin}/reset-password`,
+                });
+                setBusy(false);
+                if (err) setError("Não foi possível enviar o link agora. Tente novamente em instantes.");
+                else setInfo("Se houver uma conta com esse e-mail, enviamos um link para criar uma nova senha.");
+              }}
+              className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground"
+            >
+              Esqueci minha senha
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => {

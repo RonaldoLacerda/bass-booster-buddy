@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Check, Loader2, CreditCard } from "lucide-react";
 import { toast } from "sonner";
@@ -12,7 +13,7 @@ import { getAccount } from "@/lib/account.functions";
 import { PLANS, formatBRL } from "@/lib/plans";
 import { openPlanCheckout } from "@/lib/paddle";
 import { getPaddleEnvironment, PLAN_PRICE_IDS } from "@/lib/paddle-env";
-import { getCustomerPortalUrl } from "@/utils/payments.functions";
+import { changePlan, getCustomerPortalUrl } from "@/utils/payments.functions";
 
 export const Route = createFileRoute("/_authenticated/planos")({
   staticData: { sitemap: false },
@@ -36,6 +37,30 @@ export const Route = createFileRoute("/_authenticated/planos")({
 function PlanosPage() {
   const { data: account, isError } = useQuery({ queryKey: ["account"], queryFn: () => getAccount(), refetchInterval: 5000 });
   const portal = useServerFn(getCustomerPortalUrl);
+  const change = useServerFn(changePlan);
+  const queryClient = useQueryClient();
+  const [awaitingPayment, setAwaitingPayment] = useState(false);
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("checkout") === "success") setAwaitingPayment(true);
+  }, []);
+  useEffect(() => {
+    if (awaitingPayment && account?.hasPaymentSubscription) {
+      setAwaitingPayment(false);
+      toast.success(`Plano ${account.planName} liberado!`);
+      window.history.replaceState(null, "", "/planos");
+    }
+  }, [awaitingPayment, account?.hasPaymentSubscription, account?.planName]);
+
+  const switchPlan = useMutation({
+    mutationFn: (planId: string) => change({ data: { planId } }),
+    onSuccess: (r) => {
+      if (r.ok) toast.success(r.message);
+      else toast.error(r.message);
+      void queryClient.invalidateQueries({ queryKey: ["account"] });
+    },
+    onError: () => toast.error("Não foi possível trocar o plano. Tente novamente."),
+  });
 
   const mutation = useMutation({
     mutationFn: async (planId: string) => {
@@ -77,10 +102,9 @@ function PlanosPage() {
         )}
         {account?.paymentStatus === "past_due" && <p role="alert" className="mt-4 text-sm text-destructive">Pagamento pendente. Atualize sua forma de pagamento em Gerenciar assinatura.</p>}
         {account?.cancelAtPeriodEnd && <p className="mt-4 text-sm text-muted-foreground">Cancelamento agendado. Seu plano permanece disponível até o fim do período pago.</p>}
-        {account?.pendingRequest && (
-          <p className="mt-4 rounded-lg border border-accent/50 bg-accent/10 p-3 text-sm">
-            Você já tem uma solicitação pendente do plano <strong>{account.pendingRequest.planName}</strong>. Vamos
-            responder no seu e-mail em breve.
+        {awaitingPayment && (
+          <p role="status" className="mt-4 flex items-center gap-2 rounded-lg border border-accent/50 bg-accent/10 p-3 text-sm">
+            <Loader2 className="h-4 w-4 animate-spin" /> Pagamento recebido. Confirmando e liberando seu plano — leva alguns segundos.
           </p>
         )}
 
@@ -104,11 +128,16 @@ function PlanosPage() {
               <Button
                 className="mt-6"
                 variant={plan.highlight ? "default" : "outline"}
-                disabled={!account || mutation.isPending || account.hasPaymentSubscription || account.planId === plan.id}
-                onClick={() => mutation.mutate(plan.id)}
+                disabled={!account || mutation.isPending || switchPlan.isPending || awaitingPayment || account.planId === plan.id}
+                onClick={() => {
+                  if (!account) return;
+                  if (account.hasPaymentSubscription) {
+                    if (window.confirm(`Trocar para o plano ${plan.name} agora? A diferença proporcional ao restante do mês será cobrada ou creditada na hora.`)) switchPlan.mutate(plan.id);
+                  } else mutation.mutate(plan.id);
+                }}
               >
-                {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {account?.planId === plan.id ? "Plano ativo" : "Contratar"}
+                {(mutation.isPending || switchPlan.isPending) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {account?.planId === plan.id ? "Plano ativo" : account?.hasPaymentSubscription ? "Mudar para este plano" : "Contratar"}
               </Button>
             </article>
           ))}
@@ -116,7 +145,7 @@ function PlanosPage() {
 
         <p className="mt-6 text-xs text-muted-foreground">
           Assinatura mensal com renovação automática. Seu plano é liberado após a confirmação do pagamento pelo Paddle.
-          Cancelamento e comprovantes em Gerenciar assinatura. Para trocar de plano, cancele o atual e contrate outro após o fim do período pago.
+          Cancelamento, forma de pagamento e comprovantes em Gerenciar assinatura. A troca de plano vale na hora, com cobrança ou crédito proporcional ao restante do período.
         </p>
         <div className="mt-6"><PolicyLinks /></div>
       </main>

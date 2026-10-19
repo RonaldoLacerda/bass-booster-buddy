@@ -16,3 +16,4 @@
 - Paddle checkout uses stable price IDs, signed webhooks, and environment-scoped account/quota reads; test purchases must never unlock live quotas.
 - Payment entitlements are written only after signed webhook verification; quota consumption uses a locked database function to prevent concurrent exports exceeding limits.
 - Keep seller policies in public leaf routes with shared legal navigation and identity, so review and customer access never require sign-in.
+- Plan changes go through the payment provider's subscription update with immediate proration; quota period follows the provider billing period so renewals and upgrades stay consistent.
