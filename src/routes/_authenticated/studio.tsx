@@ -868,7 +868,7 @@ function Index() {
           </div>
           {isVideo && (
             <p className="mt-3 text-xs text-muted-foreground">
-              A imagem original será mantida e o vídeo tratado será salvo em WebM. A geração acompanha a duração do vídeo.
+              Imagem original sem recompressão, com áudio tratado em alta qualidade. Saída em MP4 ou WebM, conforme o vídeo.
             </p>
           )}
           {inputPeak !== null && (
