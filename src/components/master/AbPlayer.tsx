@@ -5,6 +5,7 @@ import { Slider } from "@/components/ui/slider";
 import { encodeWav } from "@/lib/audio-engine";
 import { formatClock } from "@/lib/recorder";
 import type { AudioMetrics } from "@/lib/analysis";
+import { playMediaPair } from "@/lib/media-playback";
 
 type Props = {
   originalUrl: string;
@@ -61,11 +62,7 @@ export function AbPlayer({ originalUrl, processed, before, after, isVideo = fals
     } else {
       try {
         setPlayError(false);
-        await el.play();
-        if (videoRef.current) {
-          videoRef.current.currentTime = el.currentTime;
-          await videoRef.current.play();
-        }
+        await playMediaPair(el, videoRef.current);
         setPlaying(true);
       } catch {
         el.pause();
@@ -118,7 +115,7 @@ export function AbPlayer({ originalUrl, processed, before, after, isVideo = fals
           src={originalUrl}
           muted
           playsInline
-          preload="metadata"
+          preload="auto"
           className="mt-4 aspect-video w-full rounded-lg bg-surface-sunken object-contain"
         />
       )}

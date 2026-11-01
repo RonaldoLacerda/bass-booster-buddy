@@ -49,7 +49,7 @@ export function ExportCard({ buffer, baseName, originalVideoUrl, disabled = fals
     try {
       const blob = await exportVideoWithAudio(originalVideoUrl, buffer, setVideoProgress);
       setLastSize(blob.size);
-      downloadBlob(blob, `${baseName}-melhorado.webm`);
+      downloadBlob(blob, `${baseName}-melhorado.${blob.type === "video/mp4" ? "mp4" : "webm"}`);
     } catch {
       setVideoError("Este navegador não conseguiu gerar o vídeo. Tente usar Chrome ou Edge atualizado.");
     } finally {
@@ -100,7 +100,7 @@ export function ExportCard({ buffer, baseName, originalVideoUrl, disabled = fals
             {videoBusy ? `Gerando vídeo... ${Math.round(videoProgress)}%` : "Baixar vídeo com áudio melhorado"}
           </Button>
           <p className="mt-2 text-xs text-muted-foreground">
-            A imagem original será mantida e o vídeo será salvo em WebM. A geração acompanha a duração do vídeo.
+            Imagem original sem recompressão, com áudio tratado em alta qualidade. Saída em MP4 ou WebM, conforme o vídeo.
           </p>
         </div>
       )}
