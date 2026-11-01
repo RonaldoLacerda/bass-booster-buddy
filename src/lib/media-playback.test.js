@@ -19,3 +19,11 @@ test("both play calls run before either play promise resolves", async () => {
   resolveAudio?.();
   await pending;
 });
+
+test("video playback failure also stops audio", async () => {
+  const calls = [];
+  const audio = { currentTime: 0, play: async () => {}, pause: () => calls.push("audio paused") };
+  const video = { currentTime: 0, muted: false, play: async () => { throw new Error("unsupported video"); }, pause: () => calls.push("video paused") };
+  await expect(playMediaPair(audio, video)).rejects.toThrow("unsupported video");
+  expect(calls).toEqual(["audio paused", "video paused"]);
+});
