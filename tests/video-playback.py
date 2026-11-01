@@ -1,5 +1,9 @@
-import asyncio,json,os
+import asyncio,json,os,subprocess
+from pathlib import Path
 from playwright.async_api import async_playwright
+TMP = Path('/tmp/browser/audiomix-video-playback')
+TMP.mkdir(parents=True, exist_ok=True)
+subprocess.run(['ffmpeg','-y','-f','lavfi','-i','testsrc2=size=640x360:rate=30:duration=5','-f','lavfi','-i','sine=frequency=440:duration=5','-c:v','libvpx','-c:a','libopus','-shortest',str(TMP / 'input.webm'),'-loglevel','error'],check=True)
 async def main():
  async with async_playwright() as p:
   b=await p.chromium.launch(headless=True)
@@ -12,7 +16,7 @@ async def main():
   await page.evaluate("localStorage.setItem('audiomix.onboarding.studio','1')")
   await page.goto('http://localhost:8080/studio',wait_until='networkidle')
   
-  await page.locator('input[type=file]').first.set_input_files({'name':'camera.MP4','mimeType':'application/octet-stream','buffer':open('/tmp/browser/video-fix/input.webm','rb').read()})
+  await page.locator('input[type=file]').first.set_input_files({'name':'camera.MP4','mimeType':'application/octet-stream','buffer':(TMP / 'input.webm').read_bytes()})
   await page.get_by_role('button',name='Tocar',exact=True).wait_for()
   await page.wait_for_function("document.querySelector('button[aria-label=Tocar]')?.disabled===false")
   await page.get_by_role('button',name='Tocar',exact=True).click()
@@ -20,7 +24,7 @@ async def main():
   print('MEDIA',await page.locator('video,audio').evaluate_all('(els)=>els.map(e=>({tag:e.tagName,paused:e.paused,time:e.currentTime,ready:e.readyState,frames:e.getVideoPlaybackQuality?.().totalVideoFrames}))'))
   state=await page.locator('video').evaluate('(e)=>({paused:e.paused,time:e.currentTime,frames:e.getVideoPlaybackQuality().totalVideoFrames})')
   assert not state['paused'] and state['time']>1 and state['frames']>20,state
-  await page.screenshot(path='/tmp/browser/video-fix/play.png')
+  await page.screenshot(path=str(TMP / 'play.png'))
   await page.get_by_role('button',name='Pausar',exact=True).click()
   assert await page.locator('video').evaluate('(e)=>e.paused')
 
@@ -30,5 +34,6 @@ async def main():
   assert await page.locator('video').evaluate('(e)=>!e.paused')
   print('PASS: video with generic MIME, moving frames, pause and original comparison')
   print('errors',errors)
+  assert not errors, errors
   await b.close()
 asyncio.run(main())
