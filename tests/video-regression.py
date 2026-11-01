@@ -20,8 +20,12 @@ async def main():
   }''',data)
   open(TMP / 'output.webm','wb').write(base64.b64decode(result.pop('bytes')));assert result=={'progress':100,'closed':True,'ended':True},result
   print('VIDEO',json.dumps(result))
-  failure=await page.evaluate('''async(data)=>{const {exportVideoWithAudio}=await import('/src/lib/video-export.ts');const bytes=Uint8Array.from(atob(data),x=>x.charCodeAt(0));const url=URL.createObjectURL(new Blob([bytes],{type:'video/webm'}));const contexts=[];const Original=window.AudioContext;window.AudioContext=class extends Original{constructor(...a){super(...a);contexts.push(this)}};const Recorder=window.MediaRecorder;window.MediaRecorder=class{static isTypeSupported(){return true}constructor(){throw Error('forced')}};try{await exportVideoWithAudio(url,new AudioBuffer({length:144000,sampleRate:48000,numberOfChannels:1}));return {rejected:false}}catch{return {rejected:true,closed:contexts.every(c=>c.state==='closed')}}finally{window.AudioContext=Original;window.MediaRecorder=Recorder;URL.revokeObjectURL(url)}}''',data)
-  assert failure=={'rejected':True,'closed':True},failure;print('FAILURE_CLEANUP',failure)
+  failure=await page.evaluate('''async()=>{const {exportVideoWithAudio}=await import('/src/lib/video-export.ts');const url=URL.createObjectURL(new Blob(['invalid'],{type:'video/webm'}));try{await exportVideoWithAudio(url,new AudioBuffer({length:144000,sampleRate:48000,numberOfChannels:1}));return false}catch{return true}finally{URL.revokeObjectURL(url)}}''')
+  assert failure, 'Unreadable input must reject instead of downloading a damaged file'
+  def frame_hashes(path):
+   result=subprocess.run(["ffmpeg","-i",str(path),"-map","0:v:0","-f","framemd5","-"],capture_output=True,text=True,check=True)
+   return [line.split(',')[-1].strip() for line in result.stdout.splitlines() if not line.startswith('#')]
+  assert frame_hashes(TMP / 'input.webm') == frame_hashes(TMP / 'output.webm'), 'Every decoded video frame must remain identical'
   subprocess.run(["ffmpeg","-y","-i",str(TMP / "output.webm"),str(TMP / "audio.wav"),"-loglevel","fatal"],check=True)
   import wave,numpy as np
   with wave.open(str(TMP / "audio.wav")) as w:
@@ -29,6 +33,6 @@ async def main():
   frequency=np.fft.rfftfreq(len(samples),1/rate)[np.argmax(abs(np.fft.rfft(samples)))]; duration=len(samples)/rate
   assert abs(frequency-880)<3, "Video must use processed 880 Hz audio, not original 440 Hz"
   assert 2.7<duration<3.3, "Delayed video playback must preserve the three-second output"
-  print('PASS: delayed video export, processed audio, duration and failure cleanup')
+  print('PASS: identical original video frames, processed audio, duration and invalid input rejection')
   await b.close()
 asyncio.run(main())
