@@ -16,7 +16,7 @@ async def main():
    const bytes=Uint8Array.from(atob(data),x=>x.charCodeAt(0));const url=URL.createObjectURL(new Blob([bytes],{type:'video/webm'}));
    const audio=new AudioBuffer({length:144000,numberOfChannels:1,sampleRate:48000});const d=audio.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=.2*Math.sin(2*Math.PI*880*i/48000);
    
-   const play=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=async function(){await new Promise(r=>setTimeout(r,500));return play.call(this)};
+   const play=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=async function(){throw new Error('Export must not depend on realtime playback')};
    try {const progress=[];const blob=await exportVideoWithAudio(url,audio,v=>progress.push(v));const arr=new Uint8Array(await blob.arrayBuffer());let s='';for(let i=0;i<arr.length;i+=8192)s+=String.fromCharCode(...arr.subarray(i,i+8192));return {bytes:btoa(s),progress:progress.at(-1),mime:blob.type};}
    finally{HTMLMediaElement.prototype.play=play;URL.revokeObjectURL(url)}
   }''',data)
