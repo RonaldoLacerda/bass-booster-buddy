@@ -1,9 +1,10 @@
 # Roadmap
 
-- [ ] Reproduzir e corrigir troca de arquivo e resultados antigos no modo simplificado.
-- [ ] Corrigir comparação, processamento e encerramento do microfone na mesa.
-- [ ] Corrigir sincronização e limpeza da exportação de vídeo.
-- [ ] Testar regressões e fluxo autenticado de comparação/exportação no preview.
+- [x] Reproduzir e corrigir troca de arquivo e resultados antigos no modo simplificado.
+- [x] Corrigir comparação, processamento e encerramento do microfone na mesa.
+- [x] Corrigir sincronização e limpeza da exportação de vídeo.
+- [x] Testar regressões DSP, WAV/MP3, vídeo com atraso e limpeza em falha; testar troca/comparação e bloqueio real de cota autenticado.
+- [ ] Confirmar download e processamento completo pela interface autenticada (conta atual sem faixas disponíveis; não alterar cota para contornar o limite).
 
 - [x] Aceitar arquivos de áudio e vídeo na masterização simplificada.
 - [x] Mostrar o vídeo durante a comparação antes/depois.

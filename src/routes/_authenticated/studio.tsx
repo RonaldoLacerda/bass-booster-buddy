@@ -398,6 +398,7 @@ function Index() {
   };
 
   const startRecording = async () => {
+    if (exportLockRef.current || recording || (mode === "file" && (!previewUrl || previewBusy))) return;
     const ctx = ensureGraph();
     if (!ctx || !recDestRef.current) return;
     if (ctx.state === "suspended") await ctx.resume();
@@ -421,6 +422,7 @@ function Index() {
           if (!mountedRef.current || takeSession !== sourceRef.current) return;
           takeBufferRef.current = decoded;
         } catch {
+          if (!mountedRef.current || takeSession !== sourceRef.current) return;
           takeBufferRef.current = null;
         }
         if (!mountedRef.current || takeSession !== sourceRef.current) return;
@@ -434,6 +436,13 @@ function Index() {
       };
       rec.start(500);
       recorderRef.current = rec;
+      if (mode === "file") {
+        const el = audioRef.current;
+        if (el) {
+          await el.play();
+          setPlaying(true);
+        }
+      }
       setRecSeconds(0);
       setRecording(true);
     } catch {
@@ -628,7 +637,7 @@ function Index() {
                 type="file"
                 accept="audio/*,video/mp4,video/webm,video/quicktime"
                 className="hidden"
-                onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
+                onChange={(e) => { const file = e.target.files?.[0]; if (file) onFile(file); e.target.value = ""; }}
               />
               <span className="inline-flex items-center gap-2 rounded-md border border-border bg-secondary px-3 py-2 text-sm font-medium transition-colors hover:bg-muted">
                 <Upload className="h-4 w-4" /> Carregar áudio ou vídeo
@@ -700,6 +709,7 @@ function Index() {
             {!recording ? (
               <Button
                 onClick={startRecording}
+                disabled={exporting || videoExporting || takeExporting || (mode === "file" && (!previewUrl || previewBusy))}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
                 <Circle className="mr-2 h-3.5 w-3.5 fill-current" /> Gravar mixado
@@ -739,7 +749,7 @@ function Index() {
                 type="file"
                 accept="audio/*,video/mp4,video/webm,video/quicktime"
                 className="hidden"
-                onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
+                onChange={(e) => { const file = e.target.files?.[0]; if (file) onFile(file); e.target.value = ""; }}
               />
               <span className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
                 <Upload className="h-4 w-4" /> Escolher arquivo
