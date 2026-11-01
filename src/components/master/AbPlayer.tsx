@@ -19,12 +19,21 @@ export function AbPlayer({ originalUrl, processed, before, after, isVideo = fals
   const [playing, setPlaying] = useState(false);
   const [pos, setPos] = useState(0);
   const [dur, setDur] = useState(0);
+  const [playError, setPlayError] = useState(false);
   const aRef = useRef<HTMLAudioElement>(null);
   const bRef = useRef<HTMLAudioElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const processedUrl = useMemo(() => URL.createObjectURL(encodeWav(processed)), [processed]);
-  useEffect(() => () => URL.revokeObjectURL(processedUrl), [processedUrl]);
+  useEffect(() => {
+    setPlaying(false);
+    setPos(0);
+    setPlayError(false);
+    aRef.current?.pause();
+    bRef.current?.pause();
+    videoRef.current?.pause();
+    return () => URL.revokeObjectURL(processedUrl);
+  }, [processedUrl, originalUrl]);
 
   const active = () => (side === "before" ? aRef.current : bRef.current);
   const idle = () => (side === "before" ? bRef.current : aRef.current);
@@ -37,11 +46,12 @@ export function AbPlayer({ originalUrl, processed, before, after, isVideo = fals
       el.currentTime = Math.min(other.currentTime, el.duration || other.currentTime);
       other.pause();
     }
-    if (playing) void el.play();
+    if (videoRef.current) videoRef.current.currentTime = el.currentTime;
+    if (playing) void el.play().catch(() => { setPlaying(false); setPlayError(true); videoRef.current?.pause(); });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [side]);
 
-  const toggle = () => {
+  const toggle = async () => {
     const el = active();
     if (!el) return;
     if (playing) {
@@ -49,9 +59,20 @@ export function AbPlayer({ originalUrl, processed, before, after, isVideo = fals
       videoRef.current?.pause();
       setPlaying(false);
     } else {
-      void el.play();
-      if (videoRef.current) void videoRef.current.play();
-      setPlaying(true);
+      try {
+        setPlayError(false);
+        await el.play();
+        if (videoRef.current) {
+          videoRef.current.currentTime = el.currentTime;
+          await videoRef.current.play();
+        }
+        setPlaying(true);
+      } catch {
+        el.pause();
+        videoRef.current?.pause();
+        setPlaying(false);
+        setPlayError(true);
+      }
     }
   };
 
@@ -157,6 +178,7 @@ export function AbPlayer({ originalUrl, processed, before, after, isVideo = fals
         }}
       />
 
+      {playError && <p role="alert" className="mt-2 text-xs text-destructive">Não foi possível tocar o arquivo. Tente novamente.</p>}
       <table className="mt-5 w-full text-xs sm:text-sm">
         <thead>
           <tr className="text-[10px] uppercase tracking-wider text-muted-foreground sm:text-xs">
