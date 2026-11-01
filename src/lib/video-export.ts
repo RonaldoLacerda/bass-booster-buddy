@@ -22,7 +22,8 @@ export async function exportVideoWithAudio(
     const config = await track.getDecoderConfig();
     if (!codec || !config) throw new Error("VIDEO_EXPORT_UNSUPPORTED");
     const rotation = await track.getRotation();
-    const format = ["vp8", "vp9", "av1"].includes(codec) && rotation === 0
+    const flip = await track.getFlip();
+    const format = ["vp8", "vp9", "av1"].includes(codec) && rotation === 0 && !flip
       ? new WebMOutputFormat() : new Mp4OutputFormat();
     if (!format.getSupportedVideoCodecs().includes(codec)) throw new Error("VIDEO_EXPORT_UNSUPPORTED");
     // AAC has broad MP4 playback support; Opus is a browser-compatible fallback.
@@ -33,7 +34,7 @@ export async function exportVideoWithAudio(
     output = new Output({ format, target });
     const videoSource = new EncodedVideoPacketSource(codec);
     const audioSource = new AudioBufferSource({ codec: audioCodec, bitrate: 320_000 });
-    output.addVideoTrack(videoSource, { decoderConfig: config, rotation, flip: await track.getFlip() });
+    output.addVideoTrack(videoSource, { decoderConfig: config, transformationMatrix: await track.getTransformationMatrix() });
     output.addAudioTrack(audioSource);
     await output.start();
     const duration = await track.computeDuration();

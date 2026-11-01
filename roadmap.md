@@ -1,6 +1,6 @@
 # Roadmap
 
-- [x] Corrigir identificação de vídeo sem MIME e início conjunto de imagem/áudio nos dois modos; reprodução confirmada na mesa autenticada. Comparação simplificada completa aguarda faixa disponível na conta.
+- [x] Corrigir identificação de vídeo sem MIME e início conjunto de imagem/áudio nos dois modos; reprodução confirmada na mesa autenticada e no comparador isolado. Fluxo simplificado completo aguarda faixa disponível na conta.
 - [x] Preservar qualidade da imagem e melhorar codificação do áudio na exportação de vídeo; quadros idênticos e áudio processado validados em MP4 e WebM.
 - [ ] Criar vídeo curto de lançamento com a marca AudioMix para LinkedIn, X ou Product Hunt (animação gráfica escolhida; renderização em andamento).
 
