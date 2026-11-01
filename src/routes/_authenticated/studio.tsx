@@ -39,7 +39,6 @@ import {
   encodeMp3,
   encodeWav,
   formatTime,
-  normalizeBuffer,
   peakDb,
   renderProcessed,
   updateChain,
@@ -101,6 +100,17 @@ function Index() {
   const [format, setFormat] = useState<ExportFormat>("wav");
   const [bitrate, setBitrate] = useState<number>(320);
   const [paid, setPaid] = useState(false);
+  const [takePaid, setTakePaid] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [previewBusy, setPreviewBusy] = useState(false);
+  const [sourceVersion, setSourceVersion] = useState(0);
+  const sourceRef = useRef(0);
+  const exportLockRef = useRef(false);
+  const mountedRef = useRef(true);
+  const previewBufferRef = useRef<AudioBuffer | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const ownedUrlRef = useRef("");
+  const takeUrlRef = useRef<string | null>(null);
 
   const {
     data: account,
@@ -109,8 +119,9 @@ function Index() {
   const spendTrack = useServerFn(consumeTrack);
   const blocked = account ? account.remaining <= 0 && !paid : false;
 
-  const ensureQuota = async () => {
-    if (paid) return true;
+  const ensureQuota = async (take = false) => {
+    if (take ? takePaid : paid) return true;
+    const source = sourceRef.current;
     if (account && account.remaining <= 0) {
       toast.error("Seu limite de faixas acabou. Escolha um plano para continuar.");
       return false;
@@ -121,7 +132,9 @@ function Index() {
       toast.error(res.reason ?? "Limite de faixas atingido.");
       return false;
     }
-    setPaid(true);
+    if (!mountedRef.current || source !== sourceRef.current) return false;
+    if (take) setTakePaid(true);
+    else setPaid(true);
     return true;
   };
 
@@ -153,7 +166,8 @@ function Index() {
   const bufferRef = useRef<AudioBuffer | null>(null);
 
   useEffect(() => {
-    setSettings((s) => PRESETS.find((p) => p.id === "culto")!.apply(s));
+    const initial = PRESETS.find((p) => p.id === "culto");
+    if (initial) setSettings((s) => initial.apply(s));
     setCustomPresets(loadCustomPresets());
   }, []);
 
@@ -173,7 +187,9 @@ function Index() {
 
       inputBus.connect(chain.input);
       inputBus.connect(dry);
-      dry.gain.value = 0;
+      dry.gain.value = mode === "file" || bypass ? 1 : 0;
+      if (mode === "file" || bypass) chain.gain.gain.value = 0;
+      masterOut.gain.value = mode === "file" || monitor ? 1 : 0;
       chain.output.connect(mixBus);
       dry.connect(mixBus);
       mixBus.connect(an);
@@ -196,11 +212,16 @@ function Index() {
       setAnalyser(an);
     }
     return ctxRef.current;
-  }, [settings]);
+  }, [settings, mode, bypass, monitor]);
 
   useEffect(() => {
-    if (chainRef.current && ctxRef.current) updateChain(chainRef.current, settings, ctxRef.current);
-  }, [settings]);
+    const chain = chainRef.current;
+    const ctx = ctxRef.current;
+    if (chain && ctx) {
+      updateChain(chain, settings, ctx);
+      if (mode === "file" || bypass) chain.gain.gain.setTargetAtTime(0, ctx.currentTime, 0.01);
+    }
+  }, [settings, mode, bypass]);
 
   useEffect(() => {
     const chain = chainRef.current;
@@ -208,12 +229,12 @@ function Index() {
     const ctx = ctxRef.current;
     if (!chain || !dry || !ctx) return;
     chain.gain.gain.setTargetAtTime(
-      bypass ? 0 : Math.pow(10, settings.outputGain / 20),
+      mode === "file" || bypass ? 0 : Math.pow(10, settings.outputGain / 20),
       ctx.currentTime,
       0.02,
     );
-    dry.gain.setTargetAtTime(bypass ? 1 : 0, ctx.currentTime, 0.02);
-  }, [bypass, settings.outputGain]);
+    dry.gain.setTargetAtTime(mode === "file" || bypass ? 1 : 0, ctx.currentTime, 0.02);
+  }, [bypass, settings.outputGain, mode]);
 
   // silencia as caixas no modo microfone sem monitoração (evita microfonia)
   useEffect(() => {
@@ -240,14 +261,68 @@ function Index() {
         if (cancelled) return;
         bufferRef.current = buf;
         setInputPeak(peakDb(buf));
+        setSourceVersion((v) => v + 1);
       } catch {
-        /* ignora — o player continua funcionando */
+        if (!cancelled) toast.error("Não conseguimos ler esse arquivo. Tente outro formato.");
       }
     })();
     return () => {
       cancelled = true;
     };
   }, [audioUrl]);
+
+  useEffect(() => {
+    let cancelled = false;
+    let url = "";
+    previewBufferRef.current = null;
+    setPreviewUrl("");
+    const buf = bufferRef.current;
+    if (!buf) return;
+    setPreviewBusy(true);
+    const timer = window.setTimeout(() => {
+      void renderProcessed(buf, settings).then((rendered) => {
+        if (cancelled) return;
+        previewBufferRef.current = rendered;
+        url = URL.createObjectURL(encodeWav(rendered));
+        setPreviewUrl(url);
+      }).catch(() => {
+        if (!cancelled) toast.error("Não foi possível preparar a prévia do áudio.");
+      }).finally(() => { if (!cancelled) setPreviewBusy(false); });
+    }, 150);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [sourceVersion, settings, audioUrl]);
+
+  useEffect(() => {
+    audioRef.current?.pause();
+    videoRef.current?.pause();
+    setPlaying(false);
+  }, [previewUrl, bypass, audioUrl]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      sourceRef.current += 1;
+      const recorder = recorderRef.current;
+      if (recorder) {
+        recorder.onstop = null;
+        recorder.ondataavailable = null;
+        if (recorder.state !== "inactive") recorder.stop();
+      }
+      micStreamRef.current?.getTracks().forEach((track) => track.stop());
+      recDestRef.current?.stream.getTracks().forEach((track) => track.stop());
+      micSrcRef.current?.disconnect();
+      fileSrcRef.current?.disconnect();
+      audioRef.current?.pause();
+      if (ctxRef.current && ctxRef.current.state !== "closed") void ctxRef.current.close();
+      if (ownedUrlRef.current) URL.revokeObjectURL(ownedUrlRef.current);
+      if (takeUrlRef.current) URL.revokeObjectURL(takeUrlRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!recording) return;
@@ -261,10 +336,20 @@ function Index() {
     const ctx = ensureGraph();
     if (ctx?.state === "suspended") await ctx.resume();
     if (el.paused) {
-      await el.play();
-      setPlaying(true);
+      try {
+        await el.play();
+        const video = videoRef.current;
+        if (video) { video.currentTime = el.currentTime; await video.play(); }
+        setPlaying(true);
+      } catch {
+        el.pause();
+        videoRef.current?.pause();
+        setPlaying(false);
+        toast.error("Não foi possível tocar o arquivo. Tente novamente.");
+      }
     } else {
       el.pause();
+      videoRef.current?.pause();
       setPlaying(false);
     }
   };
@@ -285,8 +370,16 @@ function Index() {
           autoGainControl: false,
         },
       });
+      const bus = inputBusRef.current;
+      if (!mountedRef.current || !bus || ctx.state === "closed") {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+      audioRef.current?.pause();
+      videoRef.current?.pause();
+      setPlaying(false);
       const src = ctx.createMediaStreamSource(stream);
-      src.connect(inputBusRef.current!);
+      src.connect(bus);
       micStreamRef.current = stream;
       micSrcRef.current = src;
       setMode("mic");
@@ -315,18 +408,27 @@ function Index() {
     }
     try {
       const rec = new MediaRecorder(recDestRef.current.stream, { mimeType });
-      chunksRef.current = [];
-      rec.ondataavailable = (e) => e.data.size && chunksRef.current.push(e.data);
+      const takeSession = ++sourceRef.current;
+      setTakePaid(false);
+      takeBufferRef.current = null;
+      const chunks: Blob[] = [];
+      chunksRef.current = chunks;
+      rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
       rec.onstop = async () => {
-        const blob = new Blob(chunksRef.current, { type: mimeType });
+        const blob = new Blob(chunks, { type: mimeType });
         try {
-          takeBufferRef.current = await decodeBlob(blob);
+          const decoded = await decodeBlob(blob);
+          if (!mountedRef.current || takeSession !== sourceRef.current) return;
+          takeBufferRef.current = decoded;
         } catch {
           takeBufferRef.current = null;
         }
+        if (!mountedRef.current || takeSession !== sourceRef.current) return;
         setTakeUrl((prev) => {
           if (prev) URL.revokeObjectURL(prev);
-          return URL.createObjectURL(blob);
+          const url = URL.createObjectURL(blob);
+          takeUrlRef.current = url;
+          return url;
         });
         toast.success("Gravação finalizada — já mixada e pronta para exportar.");
       };
@@ -340,17 +442,33 @@ function Index() {
   };
 
   const stopRecording = () => {
-    recorderRef.current?.stop();
+    if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
     recorderRef.current = null;
     setRecording(false);
   };
 
   const onFile = (file: File) => {
+    if (exportLockRef.current || recording) return;
+    sourceRef.current += 1;
+    setPaid(false);
+    setTakePaid(false);
+    setTakeUrl(null);
+    takeBufferRef.current = null;
+    if (takeUrlRef.current) URL.revokeObjectURL(takeUrlRef.current);
+    takeUrlRef.current = null;
+    bufferRef.current = null;
+    previewBufferRef.current = null;
+    audioRef.current?.pause();
+    videoRef.current?.pause();
+    disableMic();
+    setDuration(0);
+    setBypass(false);
     const url = URL.createObjectURL(file);
     setAudioUrl((previous) => {
       if (previous) URL.revokeObjectURL(previous);
       return url;
     });
+    ownedUrlRef.current = url;
     setFileName(file.name);
     setIsVideo(file.type.startsWith("video/"));
     setPlaying(false);
@@ -388,24 +506,21 @@ function Index() {
 
   const download = async (buf: AudioBuffer, suffix: string) => {
     const blob = format === "mp3" ? await encodeMp3(buf, bitrate) : encodeWav(buf);
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `${fileName.replace(/\.[^.]+$/, "")} - ${suffix}.${format}`;
-    a.click();
-    URL.revokeObjectURL(a.href);
+    downloadBlob(blob, `${fileName.replace(/\.[^.]+$/, "")} - ${suffix}.${format}`);
   };
 
   const handleExport = async () => {
-    const buf = bufferRef.current;
-    if (!buf) {
+    const buf = previewBufferRef.current;
+    if (!buf || previewBusy) {
       toast.error("Áudio ainda carregando, tente em alguns segundos.");
       return;
     }
-    if (!(await ensureQuota())) return;
+    if (exportLockRef.current) return;
+    exportLockRef.current = true;
     setExporting(true);
     try {
-      const rendered = await renderProcessed(buf, settings);
-      await download(rendered, "tratado");
+      if (!(await ensureQuota())) return;
+      await download(buf, "tratado");
       toast.success(
         format === "mp3"
           ? `Áudio tratado exportado em MP3 ${bitrate} kbps.`
@@ -414,27 +529,30 @@ function Index() {
     } catch {
       toast.error("Não foi possível processar este arquivo.");
     } finally {
+      exportLockRef.current = false;
       setExporting(false);
     }
   };
 
   const handleVideoExport = async () => {
-    const buf = bufferRef.current;
-    if (!buf || !audioUrl || !isVideo) {
+    const buf = previewBufferRef.current;
+    if (!buf || previewBusy || !audioUrl || !isVideo) {
       toast.error("Vídeo ainda carregando, tente em alguns segundos.");
       return;
     }
-    if (!(await ensureQuota())) return;
+    if (exportLockRef.current) return;
+    exportLockRef.current = true;
     setVideoExporting(true);
     setVideoProgress(0);
     try {
-      const rendered = await renderProcessed(buf, settings);
-      const blob = await exportVideoWithAudio(audioUrl, rendered, setVideoProgress);
+      if (!(await ensureQuota())) return;
+      const blob = await exportVideoWithAudio(audioUrl, buf, setVideoProgress);
       downloadBlob(blob, `${fileName.replace(/\.[^.]+$/, "")} - tratado.webm`);
       toast.success("Vídeo exportado com o áudio tratado.");
     } catch {
       toast.error("Não foi possível gerar o vídeo. Tente usar Chrome ou Edge atualizado.");
     } finally {
+      exportLockRef.current = false;
       setVideoExporting(false);
     }
   };
@@ -445,15 +563,17 @@ function Index() {
       toast.error("Grave algo antes de exportar.");
       return;
     }
-    if (!(await ensureQuota())) return;
+    if (exportLockRef.current) return;
+    exportLockRef.current = true;
     setTakeExporting(true);
     try {
-      if (settings.normalize) normalizeBuffer(buf, settings.targetPeak);
+      if (!(await ensureQuota(true))) return;
       await download(buf, "gravacao");
       toast.success("Gravação exportada.");
     } catch {
       toast.error("Não foi possível exportar a gravação.");
     } finally {
+      exportLockRef.current = false;
       setTakeExporting(false);
     }
   };
@@ -469,12 +589,16 @@ function Index() {
       <Onboarding id="studio" />
       <audio
         ref={audioRef}
-        src={audioUrl || undefined}
+        src={(bypass ? audioUrl : previewUrl) || undefined}
 
         crossOrigin="anonymous"
-        onTimeUpdate={(e) => setCurrent(e.currentTarget.currentTime)}
-        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
-        onEnded={() => setPlaying(false)}
+        onTimeUpdate={(e) => {
+          setCurrent(e.currentTarget.currentTime);
+          const video = videoRef.current;
+          if (video && Math.abs(video.currentTime - e.currentTarget.currentTime) > 0.2) video.currentTime = e.currentTarget.currentTime;
+        }}
+        onLoadedMetadata={(e) => { setDuration(e.currentTarget.duration); e.currentTarget.currentTime = Math.min(current, e.currentTarget.duration || 0); }}
+        onEnded={() => { setPlaying(false); videoRef.current?.pause(); }}
         className="hidden"
       />
 
@@ -588,7 +712,7 @@ function Index() {
             {takeUrl && !recording && (
               <>
                 <audio src={takeUrl} controls className="h-9 max-w-[260px]" />
-                <Button variant="outline" onClick={exportTake} disabled={takeExporting || blocked}>
+                <Button variant="outline" onClick={exportTake} disabled={takeExporting || exporting || videoExporting || (account ? account.remaining <= 0 && !takePaid : false)}>
                   {takeExporting ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
@@ -628,6 +752,7 @@ function Index() {
         <section className="panel p-5">
           {isVideo && audioUrl && (
             <video
+              ref={videoRef}
               src={audioUrl}
               muted
               playsInline
@@ -639,7 +764,7 @@ function Index() {
             <Button
               size="icon"
               onClick={togglePlay}
-              disabled={!audioUrl}
+              disabled={!audioUrl || (!bypass && (previewBusy || !previewUrl)) || mode === "mic"}
               className="h-14 w-14 rounded-full bg-[image:var(--gradient-accent)] text-accent-foreground hover:opacity-90"
               aria-label={playing ? "Pausar" : "Tocar"}
             >
@@ -659,8 +784,10 @@ function Index() {
                   max={duration || 1}
                   step={0.1}
                   onValueChange={(v) => {
-                    if (audioRef.current) audioRef.current.currentTime = v[0]!;
-                    setCurrent(v[0]!);
+                    const position = v[0] ?? 0;
+                    if (audioRef.current) audioRef.current.currentTime = position;
+                    if (videoRef.current) videoRef.current.currentTime = position;
+                    setCurrent(position);
                   }}
                   className="flex-1"
                 />
@@ -704,7 +831,7 @@ function Index() {
             </div>
             <Button
               onClick={handleExport}
-              disabled={exporting || blocked || !audioUrl}
+              disabled={exporting || videoExporting || takeExporting || previewBusy || blocked || !previewUrl}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {exporting ? (
@@ -718,7 +845,7 @@ function Index() {
               <Button
                 variant="secondary"
                 onClick={handleVideoExport}
-                disabled={videoExporting || exporting || blocked || !audioUrl}
+                disabled={videoExporting || exporting || takeExporting || previewBusy || blocked || !previewUrl}
               >
                 {videoExporting ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -919,7 +1046,7 @@ function Index() {
             <h2 className="text-sm font-semibold uppercase tracking-wider">Volume final</h2>
             <div className="flex items-center justify-between rounded-md border border-border bg-secondary/40 px-3 py-2">
               <div>
-                <p className="text-sm font-medium">Normalizar na exportação</p>
+                <p className="text-sm font-medium">Normalizar volume</p>
                 <p className="text-xs text-muted-foreground">
                   Sobe o áudio até o pico alvo, sem distorcer
                 </p>
