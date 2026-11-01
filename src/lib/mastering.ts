@@ -54,7 +54,7 @@ async function renderWithChain(buffer: AudioBuffer, settings: EqSettings): Promi
   return ctx.startRendering();
 }
 
-const cache = new Map<string, MasterResult>();
+const cache = new WeakMap<AudioBuffer, Map<string, MasterResult>>();
 export const masterCacheKey = (fileKey: string, goal: GoalId, focus: FocusId) =>
   `${fileKey}::${goal}::${focus}`;
 
@@ -66,8 +66,9 @@ export async function masterAudio(
   focus: FocusId = "none",
   cacheKey?: string,
 ): Promise<MasterResult> {
-  const key = cacheKey ? masterCacheKey(cacheKey, goalId, focus) : null;
-  if (key && cache.has(key)) return cache.get(key)!;
+  const key = masterCacheKey(cacheKey ?? "buffer", goalId, focus);
+  const cached = cache.get(buffer)?.get(key);
+  if (cached) return cached;
 
   const goal: GoalProfile = goalById(goalId);
   const settings = buildGoalSettings(goal, metrics, focus);
@@ -84,7 +85,12 @@ export async function masterAudio(
 
   const metricsOut = await analyzeBuffer(rendered);
   const result: MasterResult = { buffer: rendered, metrics: metricsOut, settings, gainApplied };
-  if (key) cache.set(key, result);
+  let entries = cache.get(buffer);
+  if (!entries) {
+    entries = new Map();
+    cache.set(buffer, entries);
+  }
+  entries.set(key, result);
   return result;
 }
 

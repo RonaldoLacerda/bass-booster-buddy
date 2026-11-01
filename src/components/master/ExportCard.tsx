@@ -8,9 +8,10 @@ type Props = {
   buffer: AudioBuffer;
   baseName: string;
   originalVideoUrl?: string | undefined;
+  disabled?: boolean;
 };
 
-export function ExportCard({ buffer, baseName, originalVideoUrl }: Props) {
+export function ExportCard({ buffer, baseName, originalVideoUrl, disabled = false }: Props) {
   const [selected, setSelected] = useState<ExportPresetId>("hifi");
   const [busy, setBusy] = useState(false);
   const [lastSize, setLastSize] = useState<number | null>(null);
@@ -19,8 +20,11 @@ export function ExportCard({ buffer, baseName, originalVideoUrl }: Props) {
   const [videoError, setVideoError] = useState<string | null>(null);
 
   const handleExport = async () => {
-    const preset = EXPORT_PRESETS.find((p) => p.id === selected)!;
+    if (busy || videoBusy || disabled) return;
+    const preset = EXPORT_PRESETS.find((p) => p.id === selected);
+    if (!preset) return;
     setBusy(true);
+    setVideoError(null);
     try {
       const blob = await encodeExport(buffer, preset);
       setLastSize(blob.size);
@@ -30,13 +34,15 @@ export function ExportCard({ buffer, baseName, originalVideoUrl }: Props) {
       a.download = `${baseName}-${preset.id}.${preset.format}`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 4000);
+    } catch {
+      setVideoError("Não foi possível gerar o áudio. Tente novamente.");
     } finally {
       setBusy(false);
     }
   };
 
   const handleVideoExport = async () => {
-    if (!originalVideoUrl) return;
+    if (!originalVideoUrl || busy || videoBusy || disabled) return;
     setVideoBusy(true);
     setVideoError(null);
     setVideoProgress(0);
@@ -72,7 +78,7 @@ export function ExportCard({ buffer, baseName, originalVideoUrl }: Props) {
         ))}
       </div>
       <div className="mt-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
-        <Button size="lg" className="w-full sm:w-auto" onClick={handleExport} disabled={busy}>
+        <Button size="lg" className="w-full sm:w-auto" onClick={handleExport} disabled={busy || videoBusy || disabled}>
           <Download className="mr-2 h-4 w-4" />
           {busy ? "Gerando arquivo..." : "Baixar áudio melhorado"}
         </Button>
@@ -88,7 +94,7 @@ export function ExportCard({ buffer, baseName, originalVideoUrl }: Props) {
             variant="secondary"
             className="w-full sm:w-auto"
             onClick={handleVideoExport}
-            disabled={videoBusy || busy}
+            disabled={videoBusy || busy || disabled}
           >
             <Film className="mr-2 h-4 w-4" />
             {videoBusy ? `Gerando vídeo... ${Math.round(videoProgress)}%` : "Baixar vídeo com áudio melhorado"}
@@ -96,9 +102,9 @@ export function ExportCard({ buffer, baseName, originalVideoUrl }: Props) {
           <p className="mt-2 text-xs text-muted-foreground">
             A imagem original será mantida e o vídeo será salvo em WebM. A geração acompanha a duração do vídeo.
           </p>
-          {videoError && <p className="mt-2 text-xs text-destructive">{videoError}</p>}
         </div>
       )}
+      {videoError && <p role="alert" className="mt-2 text-xs text-destructive">{videoError}</p>}
 
     </section>
   );
