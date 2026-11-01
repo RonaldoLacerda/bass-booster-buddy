@@ -64,16 +64,25 @@ function Master() {
   const [paid, setPaid] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const urlRef = useRef<string | null>(null);
+  const sessionRef = useRef(0);
+  const operationRef = useRef(0);
 
   const blocked = account ? account.remaining <= 0 && !paid : false;
 
   useEffect(() => {
     return () => {
+      sessionRef.current += 1;
+      operationRef.current += 1;
       if (urlRef.current) URL.revokeObjectURL(urlRef.current);
     };
   }, []);
 
   const reset = () => {
+    sessionRef.current += 1;
+    operationRef.current += 1;
+    setAnalyzing(false);
+    setProcessing(false);
+    if (inputRef.current) inputRef.current.value = "";
     if (urlRef.current) URL.revokeObjectURL(urlRef.current);
     urlRef.current = null;
     setOriginalUrl(null);
@@ -91,6 +100,14 @@ function Master() {
   };
 
   const handleFile = useCallback(async (file: File) => {
+    const session = ++sessionRef.current;
+    operationRef.current += 1;
+    setPaid(false);
+    setMaster(null);
+    setDiagnosis(null);
+    setBuffer(null);
+    setMetrics(null);
+    setProcessing(false);
     setError(null);
     setAnalyzing(true);
     setFileName(file.name.replace(/\.[^.]+$/, ""));
@@ -101,6 +118,7 @@ function Master() {
       const ctx = new OfflineAudioContext(2, 1, 48000);
       const decoded = await ctx.decodeAudioData(ab);
       const m = await analyzeBuffer(decoded);
+      if (session !== sessionRef.current) return;
       if (urlRef.current) URL.revokeObjectURL(urlRef.current);
       const url = URL.createObjectURL(file);
       urlRef.current = url;
@@ -109,13 +127,16 @@ function Master() {
       setMetrics(m);
       setStage("goal");
     } catch {
+      if (session !== sessionRef.current) return;
       setError("Não conseguimos ler esse arquivo. Tente MP3, WAV, M4A, OGG, MP4 ou WebM.");
     } finally {
-      setAnalyzing(false);
+      if (session === sessionRef.current) setAnalyzing(false);
     }
   }, []);
 
   const chooseGoal = (id: GoalId) => {
+    operationRef.current += 1;
+    setProcessing(false);
     setGoal(id);
     if (metrics) {
       setDiagnosis(diagnose(metrics, goalById(id)));
@@ -125,13 +146,16 @@ function Master() {
   };
 
   const process = async () => {
-    if (!buffer || !metrics || !goal) return;
+    if (!buffer || !metrics || !goal || processing) return;
+    const session = sessionRef.current;
+    const operation = ++operationRef.current;
     setProcessing(true);
     setError(null);
     try {
       if (!paid) {
         const credit = await spendTrack({ data: { fileName, goalId: goal } });
         void queryClient.invalidateQueries({ queryKey: ["account"] });
+        if (session !== sessionRef.current) return;
         if (!credit.ok) {
           setError(credit.reason ?? "Limite de faixas atingido.");
           return;
@@ -139,23 +163,31 @@ function Master() {
         setPaid(true);
       }
       const result = await masterAudio(buffer, metrics, goal, focus, fileName);
+      if (session !== sessionRef.current || operation !== operationRef.current) return;
       setMaster(result);
       setStage("result");
     } catch {
+      if (session !== sessionRef.current || operation !== operationRef.current) return;
       setError("Falha ao processar o áudio. Tente novamente com um arquivo menor.");
     } finally {
-      setProcessing(false);
+      if (session === sessionRef.current && operation === operationRef.current) setProcessing(false);
     }
   };
 
   const changeFocus = async (id: FocusId) => {
+    if (processing) return;
+    const session = sessionRef.current;
+    const operation = ++operationRef.current;
     setFocus(id);
     if (!buffer || !metrics || !goal) return;
     setProcessing(true);
     try {
-      setMaster(await masterAudio(buffer, metrics, goal, id, fileName));
+      const result = await masterAudio(buffer, metrics, goal, id, fileName);
+      if (session === sessionRef.current && operation === operationRef.current) setMaster(result);
+    } catch {
+      if (session === sessionRef.current && operation === operationRef.current) setError("Falha ao ajustar o foco. Tente novamente.");
     } finally {
-      setProcessing(false);
+      if (session === sessionRef.current && operation === operationRef.current) setProcessing(false);
     }
   };
 
@@ -292,7 +324,7 @@ function Master() {
               🎯 Onde esse áudio vai ser ouvido?
             </h2>
             <div className="mt-3">
-              <GoalPicker value={goal} onChange={chooseGoal} />
+              <GoalPicker value={goal} onChange={(id) => { if (!processing) chooseGoal(id); }} />
             </div>
           </section>
         )}
@@ -358,9 +390,11 @@ function Master() {
             </section>
 
             <ExportCard
+              key={`${fileName}-${goal}-${focus}`}
               buffer={master.buffer}
               baseName={fileName || "audio-masterizado"}
               originalVideoUrl={isVideo ? originalUrl : undefined}
+              disabled={processing}
             />
 
             <p className="text-xs text-muted-foreground">

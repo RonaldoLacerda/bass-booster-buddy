@@ -221,6 +221,8 @@ export type Chain = {
   comp: DynamicsCompressorNode;
   gain: GainNode;
   makeup: GainNode;
+  compressorInput: AudioNode;
+  compressorEnabled: boolean;
 };
 
 export function buildChain(ctx: ChainCtx, settings: EqSettings): Chain {
@@ -256,6 +258,7 @@ export function buildChain(ctx: ChainCtx, settings: EqSettings): Chain {
     node.connect(f);
     node = f;
   }
+  const compressorInput = node;
   if (settings.compressor) {
     node.connect(comp);
     node = comp;
@@ -276,12 +279,26 @@ export function buildChain(ctx: ChainCtx, settings: EqSettings): Chain {
     out = lim;
   }
 
-  return { input: hp, output: out, filters, hp, comp, gain, makeup };
+  return { input: hp, output: out, filters, hp, comp, gain, makeup, compressorInput, compressorEnabled: settings.compressor };
 
 }
 
 export function updateChain(chain: Chain, settings: EqSettings, ctx: ChainCtx) {
   const t = ctx.currentTime;
+  if (chain.compressorEnabled !== settings.compressor) {
+    chain.compressorInput.disconnect();
+    chain.comp.disconnect();
+    chain.makeup.disconnect();
+    if (settings.compressor) {
+      chain.compressorInput.connect(chain.comp);
+      chain.comp.connect(chain.makeup);
+      chain.makeup.connect(chain.gain);
+    } else {
+      chain.compressorInput.connect(chain.gain);
+    }
+    chain.compressorEnabled = settings.compressor;
+  }
+  chain.makeup.gain.setTargetAtTime(settings.compressor ? Math.pow(10, Math.abs(settings.threshold) * 0.18 / 20) : 1, t, 0.01);
   chain.hp.frequency.setTargetAtTime(Math.max(1, settings.highpass), t, 0.01);
   settings.bands.forEach((b, i) => {
     const f = chain.filters[i];

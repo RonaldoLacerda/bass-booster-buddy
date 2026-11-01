@@ -17,3 +17,6 @@
 - Payment entitlements are written only after signed webhook verification; quota consumption uses a locked database function to prevent concurrent exports exceeding limits.
 - Keep seller policies in public leaf routes with shared legal navigation and identity, so review and customer access never require sign-in.
 - Plan changes go through the payment provider's subscription update with immediate proration; quota period follows the provider billing period so renewals and upgrades stay consistent.
+- Cache mastered audio by AudioBuffer identity and invalidate asynchronous results across upload/reset sessions; filenames do not identify recording content.
+- Studio file preview and export share the same rendered buffer, including normalization; microphone monitoring retains the live DSP graph and must release capture resources on unmount.
+- Keep export entitlement scoped to each imported source or recorded take and serialize export actions; repeat versions of one source must not authorize a replacement source.
