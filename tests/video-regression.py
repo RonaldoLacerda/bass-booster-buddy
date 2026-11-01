@@ -28,6 +28,11 @@ async def main():
    result=subprocess.run(["ffmpeg","-i",str(path),"-map","0:v:0","-f","framemd5","-"],capture_output=True,text=True,check=True)
    return [line.split(',')[-1].strip() for line in result.stdout.splitlines() if not line.startswith('#')]
   assert frame_hashes(TMP / f'input.{EXT}') == frame_hashes(TMP / f'output.{EXT}'), 'Every decoded video frame must remain identical'
+  if MP4:
+   subprocess.run(['ffmpeg','-y','-display_rotation:v:0','90','-i',str(TMP / 'input.mp4'),'-c','copy',str(TMP / 'rotated.mp4'),'-loglevel','error'],check=True)
+   rotated=base64.b64encode((TMP / 'rotated.mp4').read_bytes()).decode()
+   orientation=await page.evaluate('''async(data)=>{const m=await import('/node_modules/.vite/deps/mediabunny.js');const {exportVideoWithAudio}=await import('/src/lib/video-export.ts');const blob=new Blob([Uint8Array.from(atob(data),x=>x.charCodeAt(0))]);const input=new m.Input({source:new m.BlobSource(blob),formats:m.ALL_FORMATS});const before=await (await input.getPrimaryVideoTrack()).getRotation();const url=URL.createObjectURL(blob);const out=await exportVideoWithAudio(url,new AudioBuffer({length:144000,sampleRate:48000,numberOfChannels:1}));const output=new m.Input({source:new m.BlobSource(out),formats:m.ALL_FORMATS});const after=await (await output.getPrimaryVideoTrack()).getRotation();input.dispose();output.dispose();URL.revokeObjectURL(url);return {before,after}}''',rotated)
+   assert orientation['before']==orientation['after'] and orientation['before']!=0, 'Phone video orientation must be preserved'
   subprocess.run(["ffmpeg","-y","-i",str(TMP / f"output.{EXT}"),str(TMP / "audio.wav"),"-loglevel","fatal"],check=True)
   import wave,numpy as np
   with wave.open(str(TMP / "audio.wav")) as w:
