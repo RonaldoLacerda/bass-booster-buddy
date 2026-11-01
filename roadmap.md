@@ -1,8 +1,8 @@
 # Roadmap
 
-- [ ] Reproduzir e corrigir vídeo parado após importação nos dois modos.
-- [ ] Preservar qualidade da imagem e melhorar codificação do áudio na exportação de vídeo; validar arquivos gerados.
-- [ ] Criar vídeo curto de lançamento com a marca AudioMix para LinkedIn, X ou Product Hunt (aguardando escolha do estilo).
+- [x] Corrigir identificação de vídeo sem MIME e início conjunto de imagem/áudio nos dois modos; reprodução confirmada na mesa autenticada. Comparação simplificada completa aguarda faixa disponível na conta.
+- [x] Preservar qualidade da imagem e melhorar codificação do áudio na exportação de vídeo; quadros idênticos e áudio processado validados em MP4 e WebM.
+- [ ] Criar vídeo curto de lançamento com a marca AudioMix para LinkedIn, X ou Product Hunt (animação gráfica escolhida; renderização em andamento).
 
 - [x] Reproduzir e corrigir troca de arquivo e resultados antigos no modo simplificado.
 - [x] Corrigir comparação, processamento e encerramento do microfone na mesa.
