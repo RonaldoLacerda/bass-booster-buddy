@@ -2,7 +2,7 @@
 
 - [x] Corrigir identificação de vídeo sem MIME e início conjunto de imagem/áudio nos dois modos; reprodução confirmada na mesa autenticada e no comparador isolado. Fluxo simplificado completo aguarda faixa disponível na conta.
 - [x] Preservar qualidade da imagem e melhorar codificação do áudio na exportação de vídeo; quadros idênticos e áudio processado validados em MP4 e WebM.
-- [ ] Criar vídeo curto de lançamento com a marca AudioMix para LinkedIn, X ou Product Hunt (animação gráfica escolhida; renderização em andamento).
+- [x] Criar vídeo curto de lançamento com a marca AudioMix para LinkedIn, X ou Product Hunt; MP4 Full HD 16:9 de 17,2 segundos com trilha instrumental, cenas e legibilidade verificadas. Medidores ilustrativos, sem resultado de cliente; não publicado em redes.
 
 - [x] Reproduzir e corrigir troca de arquivo e resultados antigos no modo simplificado.
 - [x] Corrigir comparação, processamento e encerramento do microfone na mesa.
