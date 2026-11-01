@@ -55,6 +55,7 @@ import {
 import { decodeBlob, formatClock, pickRecorderMime } from "@/lib/recorder";
 import { Onboarding } from "@/components/Onboarding";
 import { downloadBlob, exportVideoWithAudio } from "@/lib/video-export";
+import { isVideoFile, playMediaPair } from "@/lib/media-playback";
 
 
 type InputMode = "file" | "mic";
@@ -337,9 +338,7 @@ function Index() {
     if (ctx?.state === "suspended") await ctx.resume();
     if (el.paused) {
       try {
-        await el.play();
-        const video = videoRef.current;
-        if (video) { video.currentTime = el.currentTime; await video.play(); }
+        await playMediaPair(el, videoRef.current);
         setPlaying(true);
       } catch {
         el.pause();
@@ -439,7 +438,7 @@ function Index() {
       if (mode === "file") {
         const el = audioRef.current;
         if (el) {
-          await el.play();
+          await playMediaPair(el, videoRef.current);
           setPlaying(true);
         }
       }
@@ -479,7 +478,7 @@ function Index() {
     });
     ownedUrlRef.current = url;
     setFileName(file.name);
-    setIsVideo(file.type.startsWith("video/"));
+    setIsVideo(isVideoFile(file));
     setPlaying(false);
     setCurrent(0);
     setMode("file");
@@ -556,7 +555,7 @@ function Index() {
     try {
       if (!(await ensureQuota())) return;
       const blob = await exportVideoWithAudio(audioUrl, buf, setVideoProgress);
-      downloadBlob(blob, `${fileName.replace(/\.[^.]+$/, "")} - tratado.webm`);
+      downloadBlob(blob, `${fileName.replace(/\.[^.]+$/, "")} - tratado.${blob.type === "video/mp4" ? "mp4" : "webm"}`);
       toast.success("Vídeo exportado com o áudio tratado.");
     } catch {
       toast.error("Não foi possível gerar o vídeo. Tente usar Chrome ou Edge atualizado.");
@@ -601,6 +600,7 @@ function Index() {
         src={(bypass ? audioUrl : previewUrl) || undefined}
 
         crossOrigin="anonymous"
+        onPause={() => { videoRef.current?.pause(); setPlaying(false); }}
         onTimeUpdate={(e) => {
           setCurrent(e.currentTarget.currentTime);
           const video = videoRef.current;
@@ -766,7 +766,7 @@ function Index() {
               src={audioUrl}
               muted
               playsInline
-              preload="metadata"
+              preload="auto"
               className="mb-5 aspect-video w-full rounded-lg bg-surface-sunken object-contain"
             />
           )}
@@ -868,7 +868,7 @@ function Index() {
           </div>
           {isVideo && (
             <p className="mt-3 text-xs text-muted-foreground">
-              A imagem original será mantida e o vídeo tratado será salvo em WebM. A geração acompanha a duração do vídeo.
+              Imagem original sem recompressão, com áudio tratado em alta qualidade. Saída em MP4 ou WebM, conforme o vídeo.
             </p>
           )}
           {inputPeak !== null && (

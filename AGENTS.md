@@ -9,7 +9,7 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
-- O áudio e o vídeo são processados integralmente no navegador; a exportação de vídeo preserva a imagem original e grava uma nova trilha processada em WebM, sem servidor, para manter a privacidade.
+- Audio/video processing stays entirely in the browser; export copies encoded video packets with Mediabunny and replaces only audio, selecting MP4 or WebM to preserve picture quality without a server. Import detection must handle missing MIME types by extension, and paired playback starts audio/video within the same user gesture.
 - A apresentação pública usa prévias visuais construídas a partir dos recursos reais do produto, evitando imagens genéricas e promessas não implementadas.
 - Derive the sitemap from required route-level staticData.sitemap decisions, exclude the authenticated subtree, and omit lastmod unless an authoritative page-specific content timestamp exists; this prevents stale inventories and fabricated change dates.
 - Keep page titles, descriptions and canonical URLs in leaf route heads, with only sitewide defaults and verification tags at the root; this avoids duplicate canonicals and generic social previews.

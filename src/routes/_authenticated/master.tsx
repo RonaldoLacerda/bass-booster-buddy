@@ -16,6 +16,7 @@ import { masterAudio, type MasterResult } from "@/lib/mastering";
 import { formatClock } from "@/lib/recorder";
 import { consumeTrack, getAccount } from "@/lib/account.functions";
 import { Onboarding } from "@/components/Onboarding";
+import { isVideoFile } from "@/lib/media-playback";
 
 export const Route = createFileRoute("/_authenticated/master")({
   staticData: { sitemap: false },
@@ -111,7 +112,7 @@ function Master() {
     setError(null);
     setAnalyzing(true);
     setFileName(file.name.replace(/\.[^.]+$/, ""));
-    const video = file.type.startsWith("video/");
+    const video = isVideoFile(file);
     setIsVideo(video);
     try {
       const ab = await file.arrayBuffer();
