@@ -4,7 +4,7 @@ from pathlib import Path
 MP4 = "--mp4" in sys.argv
 EXT = "mp4" if MP4 else "webm"
 TMP = Path(tempfile.mkdtemp(prefix="audiomix-video-"))
-subprocess.run(["ffmpeg","-y","-f","lavfi","-i","testsrc2=size=320x240:rate=30:duration=3","-f","lavfi","-i","sine=frequency=440:duration=3","-c:v","libx264" if MP4 else "libvpx","-c:a","aac" if MP4 else "libopus","-shortest",str(TMP / f"input.{EXT}"),"-loglevel","error"],check=True)
+subprocess.run(["ffmpeg","-y","-f","lavfi","-i","testsrc2=size=1920x1080:rate=30:duration=3","-f","lavfi","-i","sine=frequency=440:duration=3","-c:v","libx264" if MP4 else "libvpx","-c:a","aac" if MP4 else "libopus","-shortest",str(TMP / f"input.{EXT}"),"-loglevel","error"],check=True)
 from playwright.async_api import async_playwright
 async def main():
  async with async_playwright() as p:
