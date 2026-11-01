@@ -1,5 +1,10 @@
 # Roadmap
 
+- [ ] Reproduzir e corrigir troca de arquivo e resultados antigos no modo simplificado.
+- [ ] Corrigir comparação, processamento e encerramento do microfone na mesa.
+- [ ] Corrigir sincronização e limpeza da exportação de vídeo.
+- [ ] Testar regressões e fluxo autenticado de comparação/exportação no preview.
+
 - [x] Aceitar arquivos de áudio e vídeo na masterização simplificada.
 - [x] Mostrar o vídeo durante a comparação antes/depois.
 - [x] Exportar vídeo com a imagem original e o áudio melhorado.
