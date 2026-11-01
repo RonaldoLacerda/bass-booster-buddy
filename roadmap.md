@@ -2,6 +2,7 @@
 
 - [ ] Reproduzir e corrigir vídeo parado após importação nos dois modos.
 - [ ] Preservar qualidade da imagem e melhorar codificação do áudio na exportação de vídeo; validar arquivos gerados.
+- [ ] Criar vídeo curto de lançamento com a marca AudioMix para LinkedIn, X ou Product Hunt (aguardando escolha do estilo).
 
 - [x] Reproduzir e corrigir troca de arquivo e resultados antigos no modo simplificado.
 - [x] Corrigir comparação, processamento e encerramento do microfone na mesa.
