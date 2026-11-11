@@ -3,7 +3,7 @@
  */
 import { analyzeBuffer, type AudioMetrics } from "./analysis";
 import { buildChain, encodeMp3, encodeWav, type EqSettings, type ExportFormat } from "./audio-engine";
-import { buildGoalSettings, goalById, type FocusId, type GoalId, type GoalProfile } from "./goals";
+import { buildGoalSettings, goalById, type FocusId, type GoalId, type GoalProfile, type Intensity } from "./goals";
 
 export type MasterResult = {
   buffer: AudioBuffer;
@@ -55,8 +55,8 @@ async function renderWithChain(buffer: AudioBuffer, settings: EqSettings): Promi
 }
 
 const cache = new WeakMap<AudioBuffer, Map<string, MasterResult>>();
-export const masterCacheKey = (fileKey: string, goal: GoalId, focus: FocusId) =>
-  `${fileKey}::${goal}::${focus}`;
+export const masterCacheKey = (fileKey: string, goal: GoalId, focus: FocusId, intensity: Intensity = "balanced") =>
+  `${fileKey}::${goal}::${focus}::${intensity}`;
 
 /** Masteriza para o objetivo: EQ → compressor → limiter → mono bass → loudness. */
 export async function masterAudio(
@@ -65,13 +65,14 @@ export async function masterAudio(
   goalId: GoalId,
   focus: FocusId = "none",
   cacheKey?: string,
+  intensity: Intensity = "balanced",
 ): Promise<MasterResult> {
-  const key = masterCacheKey(cacheKey ?? "buffer", goalId, focus);
+  const key = masterCacheKey(cacheKey ?? "buffer", goalId, focus, intensity);
   const cached = cache.get(buffer)?.get(key);
   if (cached) return cached;
 
   const goal: GoalProfile = goalById(goalId);
-  const settings = buildGoalSettings(goal, metrics, focus);
+  const settings = buildGoalSettings(goal, metrics, focus, intensity);
 
   const rendered = await renderWithChain(buffer, settings);
   if (goal.monoBass) monoBassInPlace(rendered);

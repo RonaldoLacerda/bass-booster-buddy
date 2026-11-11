@@ -135,7 +135,7 @@ const FAQ = [
   },
   {
     q: "Como funciona o teste grátis?",
-    a: `Ao criar a conta você pode processar ${FREE_TRACKS} faixa gratuitamente, sem cartão. Depois escolha um plano conforme a quantidade mensal que precisa.`,
+    a: `Você pode enviar um arquivo, ver o diagnóstico e ouvir o antes e depois sem cadastro. Para baixar, crie uma conta grátis: ${FREE_TRACKS} faixa inclusa, sem cartão. Depois escolha um plano conforme a quantidade mensal que precisa.`,
   },
 ];
 
@@ -157,7 +157,7 @@ function Landing() {
               <Link to="/auth">Entrar</Link>
             </Button>
             <Button size="sm" className="hidden sm:inline-flex" asChild>
-              <Link to="/auth">Testar grátis</Link>
+              <Link to="/master">Testar grátis</Link>
             </Button>
           </div>
         </div>
@@ -180,7 +180,7 @@ function Landing() {
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Button size="lg" className="h-12 px-7" asChild>
-                <Link to="/auth">Melhorar meu arquivo grátis <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Link to="/master">Melhorar meu arquivo grátis <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
               <Button size="lg" variant="outline" className="h-12 px-7" asChild>
                 <a href="#produto"><Play className="mr-2 h-4 w-4 fill-current" /> Ver o AudioMix</a>
@@ -296,7 +296,7 @@ function Landing() {
               <p className="landing-eyebrow">Para cada gravação</p>
               <h2 className="mt-3 text-3xl font-bold sm:text-5xl">Um estúdio que cabe na sua rotina</h2>
               <p className="mt-4 leading-7 text-muted-foreground">Música, ensaio, podcast, aula, narração, evento, apresentação ou vídeo para redes sociais. Escolha o objetivo e trabalhe no celular ou computador.</p>
-              <Button className="mt-7" variant="outline" asChild><Link to="/auth">Experimentar agora <ChevronRight className="ml-1 h-4 w-4" /></Link></Button>
+              <Button className="mt-7" variant="outline" asChild><Link to="/master">Experimentar agora <ChevronRight className="ml-1 h-4 w-4" /></Link></Button>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {[
@@ -361,7 +361,7 @@ function Landing() {
             <p className="landing-eyebrow">Seu arquivo pode soar melhor</p>
             <h2 className="mx-auto mt-3 max-w-3xl text-3xl font-bold sm:text-5xl">Ouça a diferença no seu próprio áudio ou vídeo.</h2>
             <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground">Crie sua conta, envie uma faixa e teste todos os passos sem informar cartão.</p>
-            <Button size="lg" className="mt-7 h-12 px-7" asChild><Link to="/auth">Começar com 1 faixa grátis <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
+            <Button size="lg" className="mt-7 h-12 px-7" asChild><Link to="/master">Começar com 1 faixa grátis <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
           </div>
         </section>
       </main>

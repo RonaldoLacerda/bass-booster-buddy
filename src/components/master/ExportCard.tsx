@@ -9,9 +9,11 @@ type Props = {
   baseName: string;
   originalVideoUrl?: string | undefined;
   disabled?: boolean;
+  /** Called before any download; return false to cancel (e.g. sign-in or quota). */
+  onBeforeDownload?: () => Promise<boolean>;
 };
 
-export function ExportCard({ buffer, baseName, originalVideoUrl, disabled = false }: Props) {
+export function ExportCard({ buffer, baseName, originalVideoUrl, disabled = false, onBeforeDownload }: Props) {
   const [selected, setSelected] = useState<ExportPresetId>("hifi");
   const [busy, setBusy] = useState(false);
   const [lastSize, setLastSize] = useState<number | null>(null);
@@ -26,6 +28,7 @@ export function ExportCard({ buffer, baseName, originalVideoUrl, disabled = fals
     setBusy(true);
     setVideoError(null);
     try {
+      if (onBeforeDownload && !(await onBeforeDownload())) return;
       const blob = await encodeExport(buffer, preset);
       setLastSize(blob.size);
       const url = URL.createObjectURL(blob);
@@ -47,6 +50,7 @@ export function ExportCard({ buffer, baseName, originalVideoUrl, disabled = fals
     setVideoError(null);
     setVideoProgress(0);
     try {
+      if (onBeforeDownload && !(await onBeforeDownload())) return;
       const blob = await exportVideoWithAudio(originalVideoUrl, buffer, setVideoProgress);
       setLastSize(blob.size);
       downloadBlob(blob, `${baseName}-melhorado.${blob.type === "video/mp4" ? "mp4" : "webm"}`);

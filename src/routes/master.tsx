@@ -11,14 +11,15 @@ import { AbPlayer } from "@/components/master/AbPlayer";
 import { ExportCard } from "@/components/master/ExportCard";
 import { analyzeBuffer, type AudioMetrics } from "@/lib/analysis";
 import { diagnose, focusInsight, type Diagnosis } from "@/lib/diagnosis";
-import { FOCUS, type FocusId, type GoalId, goalById } from "@/lib/goals";
+import { FOCUS, INTENSITIES, type FocusId, type GoalId, type Intensity, goalById } from "@/lib/goals";
+import { supabase } from "@/integrations/supabase/client";
 import { masterAudio, type MasterResult } from "@/lib/mastering";
 import { formatClock } from "@/lib/recorder";
 import { consumeTrack, getAccount } from "@/lib/account.functions";
 import { Onboarding } from "@/components/Onboarding";
 import { isVideoFile } from "@/lib/media-playback";
 
-export const Route = createFileRoute("/_authenticated/master")({
+export const Route = createFileRoute("/master")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
@@ -45,7 +46,15 @@ type Stage = "upload" | "goal" | "diagnosis" | "result";
 
 function Master() {
   const queryClient = useQueryClient();
-  const { data: account } = useQuery({ queryKey: ["account"], queryFn: () => getAccount() });
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  useEffect(() => {
+    void supabase.auth.getSession().then(({ data }) => setSignedIn(!!data.session));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => setSignedIn(!!session));
+    return () => sub.subscription.unsubscribe();
+  }, []);
+  const { data: account } = useQuery({ queryKey: ["account"], queryFn: () => getAccount(), enabled: signedIn === true });
+  const [intensity, setIntensity] = useState<Intensity>("balanced");
+  const [needsAccount, setNeedsAccount] = useState(false);
   const spendTrack = useServerFn(consumeTrack);
 
   const [stage, setStage] = useState<Stage>("upload");
@@ -93,6 +102,8 @@ function Master() {
     setMaster(null);
     setGoal(null);
     setFocus("none");
+    setIntensity("balanced");
+    setNeedsAccount(false);
     setFileName("");
     setIsVideo(false);
     setError(null);
@@ -104,6 +115,7 @@ function Master() {
     const session = ++sessionRef.current;
     operationRef.current += 1;
     setPaid(false);
+    setNeedsAccount(false);
     setMaster(null);
     setDiagnosis(null);
     setBuffer(null);
@@ -153,17 +165,7 @@ function Master() {
     setProcessing(true);
     setError(null);
     try {
-      if (!paid) {
-        const credit = await spendTrack({ data: { fileName, goalId: goal } });
-        void queryClient.invalidateQueries({ queryKey: ["account"] });
-        if (session !== sessionRef.current) return;
-        if (!credit.ok) {
-          setError(credit.reason ?? "Limite de faixas atingido.");
-          return;
-        }
-        setPaid(true);
-      }
-      const result = await masterAudio(buffer, metrics, goal, focus, fileName);
+      const result = await masterAudio(buffer, metrics, goal, focus, fileName, intensity);
       if (session !== sessionRef.current || operation !== operationRef.current) return;
       setMaster(result);
       setStage("result");
@@ -175,15 +177,38 @@ function Master() {
     }
   };
 
-  const changeFocus = async (id: FocusId) => {
+  // Credit is spent once per imported source, right before its first download.
+  const ensureDownload = async (): Promise<boolean> => {
+    if (!signedIn) {
+      setNeedsAccount(true);
+      return false;
+    }
+    if (paid) return true;
+    const session = sessionRef.current;
+    const credit = await spendTrack({ data: { fileName, goalId: goal ?? "" } });
+    void queryClient.invalidateQueries({ queryKey: ["account"] });
+    if (session !== sessionRef.current) return false;
+    if (!credit.ok) {
+      setError(credit.reason ?? "Limite de faixas atingido. Escolha um plano para baixar.");
+      return false;
+    }
+    setPaid(true);
+    return true;
+  };
+
+  const changeFocus = (id: FocusId) => rerender(id, intensity);
+  const changeIntensity = (id: Intensity) => rerender(focus, id);
+
+  const rerender = async (id: FocusId, nextIntensity: Intensity) => {
     if (processing) return;
     const session = sessionRef.current;
     const operation = ++operationRef.current;
     setFocus(id);
+    setIntensity(nextIntensity);
     if (!buffer || !metrics || !goal) return;
     setProcessing(true);
     try {
-      const result = await masterAudio(buffer, metrics, goal, id, fileName);
+      const result = await masterAudio(buffer, metrics, goal, id, fileName, nextIntensity);
       if (session === sessionRef.current && operation === operationRef.current) setMaster(result);
     } catch {
       if (session === sessionRef.current && operation === operationRef.current) setError("Falha ao ajustar o foco. Tente novamente.");
@@ -196,7 +221,7 @@ function Master() {
 
   return (
     <>
-      <AppNav />
+      <AppNav guest={signedIn === false} />
       <Onboarding id="master" />
       <main className="mx-auto max-w-5xl px-4 py-6 sm:py-10">
         <header className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
@@ -236,6 +261,7 @@ function Master() {
           <section className="panel mt-6 flex flex-col items-start gap-3 border border-accent/50 p-4 sm:p-5">
             <Lock className="h-6 w-6 text-accent" />
             <h2 className="text-lg font-semibold">Seu limite de faixas acabou</h2>
+            <p className="text-sm text-muted-foreground">Você ainda pode testar e ouvir o antes e depois; o download precisa de faixa disponível.</p>
             <p className="text-sm text-muted-foreground">
               {account?.planId === "free"
                 ? "Você já usou sua faixa gratuita. Escolha um plano para continuar masterizando."
@@ -253,7 +279,7 @@ function Master() {
           </p>
         )}
 
-        {stage === "upload" && !blocked && (
+        {stage === "upload" && (
           <section className="mt-6 sm:mt-8">
             <div
               onDragOver={(e) => {
@@ -353,6 +379,30 @@ function Master() {
 
             <section className="panel p-4 sm:p-5">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                🎚️ Intensidade do tratamento
+              </h2>
+              <div className="mt-3 grid grid-cols-3 gap-2" role="radiogroup" aria-label="Intensidade do tratamento">
+                {INTENSITIES.map((it) => (
+                  <button
+                    key={it.id}
+                    role="radio"
+                    aria-checked={intensity === it.id}
+                    onClick={() => void changeIntensity(it.id)}
+                    disabled={processing}
+                    className={`rounded-lg border p-3 text-left transition-colors ${
+                      intensity === it.id ? "border-accent bg-accent/15" : "border-border hover:border-accent/60"
+                    }`}
+                  >
+                    <p className={`text-sm font-semibold ${intensity === it.id ? "text-accent" : ""}`}>{it.name}</p>
+                    <p className="text-[11px] leading-tight text-muted-foreground">{it.detail}</p>
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">O volume final segue o alvo do objetivo; a intensidade muda quanto grave, brilho e compressão são aplicados.</p>
+            </section>
+
+            <section className="panel p-4 sm:p-5">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 🎸 Destacar um instrumento
               </h2>
               <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
@@ -385,18 +435,31 @@ function Master() {
               )}
               {processing && (
                 <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Reprocessando com o novo foco...
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Reprocessando com o novo ajuste...
                 </p>
               )}
             </section>
 
             <ExportCard
-              key={`${fileName}-${goal}-${focus}`}
+              key={`${fileName}-${goal}-${focus}-${intensity}`}
               buffer={master.buffer}
               baseName={fileName || "audio-masterizado"}
               originalVideoUrl={isVideo ? originalUrl : undefined}
               disabled={processing}
+              onBeforeDownload={ensureDownload}
             />
+
+            {needsAccount && (
+              <section role="alert" className="panel flex flex-col items-start gap-3 border border-accent/50 p-4 sm:p-5">
+                <h2 className="text-lg font-semibold">Gostou do resultado? Crie sua conta grátis para baixar</h2>
+                <p className="text-sm text-muted-foreground">
+                  A primeira faixa é grátis, sem cartão. Depois de entrar, envie o arquivo de novo — tudo continua sendo processado no seu aparelho.
+                </p>
+                <Button className="w-full sm:w-auto" asChild>
+                  <Link to="/auth">Criar conta grátis</Link>
+                </Button>
+              </section>
+            )}
 
             <p className="text-xs text-muted-foreground">
               Ganho aplicado na normalização: {master.gainApplied >= 0 ? "+" : ""}

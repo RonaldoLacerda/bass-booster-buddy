@@ -20,3 +20,4 @@
 - Cache mastered audio by AudioBuffer identity and invalidate asynchronous results across upload/reset sessions; filenames do not identify recording content.
 - Studio file preview and export share the same rendered buffer, including normalization; microphone monitoring retains the live DSP graph and must release capture resources on unmount.
 - Keep export entitlement scoped to each imported source or recorded take and serialize export actions; repeat versions of one source must not authorize a replacement source.
+- The simplified mastering page is public: visitors can analyze and compare without an account, and a track credit is consumed only right before the first download of each imported source, so trying is frictionless while quotas stay enforced server-side.

@@ -12,12 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as MasterRouteImport } from './routes/master'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as ReembolsoRouteImport } from './routes/reembolso'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermosRouteImport } from './routes/termos'
-import { Route as AuthenticatedMasterRouteImport } from './routes/_authenticated/master'
 import { Route as AuthenticatedPlanosRouteImport } from './routes/_authenticated/planos'
 import { Route as AuthenticatedStudioRouteImport } from './routes/_authenticated/studio'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
@@ -34,6 +34,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MasterRoute = MasterRouteImport.update({
+  id: '/master',
+  path: '/master',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
@@ -61,11 +66,6 @@ const TermosRoute = TermosRouteImport.update({
   path: '/termos',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedMasterRoute = AuthenticatedMasterRouteImport.update({
-  id: '/master',
-  path: '/master',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedPlanosRoute = AuthenticatedPlanosRouteImport.update({
   id: '/planos',
   path: '/planos',
@@ -86,12 +86,12 @@ const ApiPublicPaymentsWebhookRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/master': typeof MasterRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reembolso': typeof ReembolsoRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
-  '/master': typeof AuthenticatedMasterRoute
   '/planos': typeof AuthenticatedPlanosRoute
   '/studio': typeof AuthenticatedStudioRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -99,12 +99,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/master': typeof MasterRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reembolso': typeof ReembolsoRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
-  '/master': typeof AuthenticatedMasterRoute
   '/planos': typeof AuthenticatedPlanosRoute
   '/studio': typeof AuthenticatedStudioRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -114,12 +114,12 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/master': typeof MasterRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reembolso': typeof ReembolsoRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos': typeof TermosRoute
-  '/_authenticated/master': typeof AuthenticatedMasterRoute
   '/_authenticated/planos': typeof AuthenticatedPlanosRoute
   '/_authenticated/studio': typeof AuthenticatedStudioRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -129,12 +129,12 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/master'
     | '/privacidade'
     | '/reembolso'
     | '/reset-password'
     | '/sitemap.xml'
     | '/termos'
-    | '/master'
     | '/planos'
     | '/studio'
     | '/api/public/payments/webhook'
@@ -142,12 +142,12 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/master'
     | '/privacidade'
     | '/reembolso'
     | '/reset-password'
     | '/sitemap.xml'
     | '/termos'
-    | '/master'
     | '/planos'
     | '/studio'
     | '/api/public/payments/webhook'
@@ -156,12 +156,12 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/master'
     | '/privacidade'
     | '/reembolso'
     | '/reset-password'
     | '/sitemap.xml'
     | '/termos'
-    | '/_authenticated/master'
     | '/_authenticated/planos'
     | '/_authenticated/studio'
     | '/api/public/payments/webhook'
@@ -171,6 +171,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  MasterRoute: typeof MasterRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   ReembolsoRoute: typeof ReembolsoRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -200,6 +201,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/master': {
+      id: '/master'
+      path: '/master'
+      fullPath: '/master'
+      preLoaderRoute: typeof MasterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacidade': {
@@ -237,13 +245,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermosRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/master': {
-      id: '/_authenticated/master'
-      path: '/master'
-      fullPath: '/master'
-      preLoaderRoute: typeof AuthenticatedMasterRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/planos': {
       id: '/_authenticated/planos'
       path: '/planos'
@@ -269,13 +270,11 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedMasterRoute: typeof AuthenticatedMasterRoute
   AuthenticatedPlanosRoute: typeof AuthenticatedPlanosRoute
   AuthenticatedStudioRoute: typeof AuthenticatedStudioRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedMasterRoute: AuthenticatedMasterRoute,
   AuthenticatedPlanosRoute: AuthenticatedPlanosRoute,
   AuthenticatedStudioRoute: AuthenticatedStudioRoute,
 }
@@ -287,6 +286,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  MasterRoute: MasterRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   ReembolsoRoute: ReembolsoRoute,
   ResetPasswordRoute: ResetPasswordRoute,

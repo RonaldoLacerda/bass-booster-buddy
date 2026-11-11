@@ -25,6 +25,20 @@ export function AbPlayer({ originalUrl, processed, before, after, isVideo = fals
   const bRef = useRef<HTMLAudioElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  const peaks = useMemo(() => {
+    const data = processed.getChannelData(0);
+    const n = 96;
+    const step = Math.max(1, Math.floor(data.length / n));
+    const out: number[] = [];
+    for (let i = 0; i < n; i++) {
+      let max = 0;
+      for (let j = i * step; j < Math.min(data.length, (i + 1) * step); j += 16) max = Math.max(max, Math.abs(data[j]!));
+      out.push(max);
+    }
+    const top = Math.max(...out, 0.0001);
+    return out.map((v) => Math.max(0.06, v / top));
+  }, [processed]);
+
   const processedUrl = useMemo(() => URL.createObjectURL(encodeWav(processed)), [processed]);
   useEffect(() => {
     setPlaying(false);
@@ -130,6 +144,22 @@ export function AbPlayer({ originalUrl, processed, before, after, isVideo = fals
           {playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
         </Button>
         <div className="min-w-0 flex-1">
+          <div
+            className="mb-2 flex h-12 cursor-pointer items-center gap-px"
+            aria-hidden="true"
+            onClick={(e) => {
+              const r = e.currentTarget.getBoundingClientRect();
+              seek(((e.clientX - r.left) / r.width) * (dur || 0));
+            }}
+          >
+            {peaks.map((p, i) => (
+              <span
+                key={i}
+                className={`flex-1 rounded-full ${dur && i / peaks.length <= pos / dur ? "bg-accent" : "bg-muted-foreground/35"}`}
+                style={{ height: `${p * 100}%` }}
+              />
+            ))}
+          </div>
           <Slider value={[pos]} min={0} max={dur || 1} step={0.1} onValueChange={([v]) => seek(v ?? 0)} />
           <div className="mt-1.5 flex justify-between font-mono text-[11px] text-muted-foreground">
             <span>{formatClock(pos)}</span>

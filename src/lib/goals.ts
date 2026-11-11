@@ -191,11 +191,22 @@ export const FOCUS: FocusProfile[] = [
 export const focusById = (id: FocusId) => FOCUS.find((f) => f.id === id)!;
 
 /** Combina objetivo + medições reais + foco em uma cadeia de processamento. */
+export type Intensity = "soft" | "balanced" | "strong";
+/** Escala EQ e compressão; a normalização final de loudness continua igual. */
+export const INTENSITY_AMOUNT: Record<Intensity, number> = { soft: 0.5, balanced: 1, strong: 1.3 };
+export const INTENSITIES: Array<{ id: Intensity; name: string; detail: string }> = [
+  { id: "soft", name: "Suave", detail: "Correção leve, som natural" },
+  { id: "balanced", name: "Equilibrada", detail: "Recomendado" },
+  { id: "strong", name: "Intensa", detail: "Mais grave, brilho e pressão" },
+];
+
 export function buildGoalSettings(
   goal: GoalProfile,
   m: AudioMetrics,
   focusId: FocusId = "none",
+  intensity: Intensity = "balanced",
 ): EqSettings {
+  const amount = INTENSITY_AMOUNT[intensity];
   const focus = focusById(focusId);
   const gains: Record<string, number> = { ...goal.gains };
   for (const [k, v] of Object.entries(focus.gains)) {
@@ -235,11 +246,11 @@ export function buildGoalSettings(
   const clamp = (v: number) => Math.max(-12, Math.min(12, v));
 
   return {
-    bands: DEFAULT_BANDS.map((b) => ({ ...b, gain: clamp(gains[b.id] ?? 0) })),
+    bands: DEFAULT_BANDS.map((b) => ({ ...b, gain: clamp((gains[b.id] ?? 0) * amount) })),
     highpass: goal.highpass,
     compressor: true,
-    threshold: Math.max(-40, Math.min(-6, threshold)),
-    ratio: Math.max(1.5, Math.min(8, ratio)),
+    threshold: Math.max(-40, Math.min(-6, threshold * amount)),
+    ratio: Math.max(1.2, Math.min(8, 1 + (ratio - 1) * amount)),
     outputGain: 0,
     normalize: false, // a normalização é por loudness (LUFS), feita no mastering
     targetPeak: Math.pow(10, goal.ceiling / 20),

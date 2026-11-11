@@ -48,7 +48,7 @@ function ResetPasswordPage() {
     const { error: err } = await supabase.auth.updateUser({ password });
     setBusy(false);
     if (err) return setError(err.message.includes("different") ? "Use uma senha diferente da anterior." : "Não foi possível salvar. Peça um novo link.");
-    void navigate({ to: "/studio" });
+    void navigate({ to: "/master" });
   };
 
   return (

@@ -6,22 +6,29 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { getAccount } from "@/lib/account.functions";
 
-export function AppNav() {
+export function AppNav({ guest = false }: { guest?: boolean }) {
   const navigate = useNavigate();
-  const { data: account } = useQuery({ queryKey: ["account"], queryFn: () => getAccount() });
+  const { data: account } = useQuery({ queryKey: ["account"], queryFn: () => getAccount(), enabled: !guest });
+
+  if (guest) {
+    return (
+      <nav className="border-b border-border bg-[var(--surface-sunken)]">
+        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 text-sm">
+          <Link to="/" className="font-semibold">AudioMix</Link>
+          <span className="text-xs text-muted-foreground">Teste sem cadastro</span>
+          <Button size="sm" className="ml-auto" asChild>
+            <Link to="/auth">Entrar ou criar conta</Link>
+          </Button>
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <nav className="border-b border-border bg-[var(--surface-sunken)]">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3 text-sm">
-        <Link to="/studio" className="font-semibold">
+        <Link to="/master" className="font-semibold">
           AudioMix
-        </Link>
-        <Link
-          to="/studio"
-          className="text-muted-foreground hover:text-foreground"
-          activeProps={{ className: "font-semibold text-foreground" }}
-        >
-          Mesa completa
         </Link>
         <Link
           to="/master"
@@ -29,6 +36,13 @@ export function AppNav() {
           activeProps={{ className: "font-semibold text-foreground" }}
         >
           Modo simplificado
+        </Link>
+        <Link
+          to="/studio"
+          className="text-muted-foreground hover:text-foreground"
+          activeProps={{ className: "font-semibold text-foreground" }}
+        >
+          Mesa completa
         </Link>
         <Link to="/planos" className="text-muted-foreground hover:text-foreground">
           Planos

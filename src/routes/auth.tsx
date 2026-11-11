@@ -94,7 +94,7 @@ function AuthPage() {
           password,
         });
         if (err) throw err;
-        void navigate({ to: "/studio" });
+        void navigate({ to: "/master" });
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Falha na autenticação.";

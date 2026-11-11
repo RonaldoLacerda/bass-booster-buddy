@@ -27,3 +27,6 @@
 - [x] Remover pedido manual de plano e painel de solicitações.
 - [x] Recuperação de senha por e-mail.
 - [x] Confirmação visível após o pagamento e bloqueio de compra duplicada.
+- [x] Teste sem cadastro no modo simplificado; conta e faixa só no download.
+- [x] Controle de intensidade (Suave/Equilibrada/Intensa) e forma de onda real no antes/depois.
+- [x] Após entrar, abrir o modo simplificado primeiro.
