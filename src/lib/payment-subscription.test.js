@@ -10,7 +10,7 @@ const event = (id = "essencial") => ({
 });
 describe("AudioMix payment rules", () => {
   test("free grants exactly one lifetime track", () => expect(FREE_TRACKS).toBe(1));
-  for (const [id, price, tracks] of [["essencial",12.99,7],["banda",16.99,12],["estudio",22.99,30]]) {
+  for (const [id, price, tracks] of [["essencial",22.99,7],["banda",26.99,12],["estudio",32.99,30]]) {
     test(`${id} preserves price ${price} and ${tracks} monthly tracks`, () => {
       expect(PLANS.find(p => p.id === id)?.price).toBe(price);
       expect(subscriptionRecord(event(id), "live", "2026-01-01T00:00:00Z").tracks_limit).toBe(tracks);

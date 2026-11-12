@@ -15,14 +15,14 @@ export const PLANS: Plan[] = [
   {
     id: "essencial",
     name: "Essencial",
-    price: 12.99,
+    price: 22.99,
     tracks: 7,
     perks: ["Até 7 faixas por mês", "Diagnóstico automático", "Exportação WAV e MP3 320 kbps"],
   },
   {
     id: "banda",
     name: "Banda",
-    price: 16.99,
+    price: 26.99,
     tracks: 12,
     highlight: true,
     perks: ["Até 12 faixas por mês", "Foco por instrumento", "Modo avançado (EQ 10 bandas)"],
@@ -30,7 +30,7 @@ export const PLANS: Plan[] = [
   {
     id: "estudio",
     name: "Estúdio",
-    price: 22.99,
+    price: 32.99,
     tracks: 30,
     perks: ["Até 30 faixas por mês", "Gravação ao vivo processada", "Presets personalizados"],
   },
