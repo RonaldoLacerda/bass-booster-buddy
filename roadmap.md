@@ -30,4 +30,4 @@
 - [x] Teste sem cadastro no modo simplificado; conta e faixa só no download.
 - [x] Controle de intensidade (Suave/Equilibrada/Intensa) e forma de onda real no antes/depois.
 - [x] Após entrar, abrir o modo simplificado primeiro.
-- [ ] Aumentar R$10 em cada plano (Essencial 22,99 / Banda 26,99 / Estúdio 32,99)
+- [x] Aumentar R$10 em cada plano (Essencial 22,99 / Banda 26,99 / Estúdio 32,99)
