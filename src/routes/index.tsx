@@ -26,6 +26,7 @@ import { PolicyLinks } from "@/components/LegalPage";
 import { Button } from "@/components/ui/button";
 import { FREE_TRACKS, PLANS, formatBRL } from "@/lib/plans";
 import { SEO_PAGES } from "@/lib/seo-pages";
+import { track } from "@/lib/track";
 
 const TITLE = "AudioMix — masterize áudio e vídeo direto no navegador";
 const DESCRIPTION =
@@ -159,7 +160,7 @@ function Landing() {
               <Link to="/auth">Entrar</Link>
             </Button>
             <Button size="sm" className="hidden sm:inline-flex" asChild>
-              <Link to="/master">Testar grátis</Link>
+              <Link to="/master" onClick={() => track("cta_click", { cta: "nav" })}>Testar grátis</Link>
             </Button>
           </div>
         </div>
@@ -182,7 +183,7 @@ function Landing() {
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Button size="lg" className="h-12 px-7" asChild>
-                <Link to="/master">Melhorar meu arquivo grátis <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Link to="/master" onClick={() => track("cta_click", { cta: "hero" })}>Melhorar meu arquivo grátis <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
               <Button size="lg" variant="outline" className="h-12 px-7" asChild>
                 <a href="#produto"><Play className="mr-2 h-4 w-4 fill-current" /> Ver o AudioMix</a>
@@ -334,7 +335,7 @@ function Landing() {
                     {plan.perks.map((perk) => <li key={perk} className="flex gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span className="text-muted-foreground">{perk}</span></li>)}
                     <li className="flex gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span className="text-muted-foreground">Áudio e vídeo</span></li>
                   </ul>
-                  <Button className="mt-7 w-full" variant={plan.highlight ? "default" : "outline"} asChild><Link to="/auth" search={{ mode: "signup" }}>Escolher {plan.name}</Link></Button>
+                  <Button className="mt-7 w-full" variant={plan.highlight ? "default" : "outline"} asChild><Link to="/auth" search={{ mode: "signup" }} onClick={() => track("cta_click", { cta: "plano", plan_id: plan.id })}>Escolher {plan.name}</Link></Button>
                 </article>
               ))}
             </div>
@@ -363,7 +364,7 @@ function Landing() {
             <p className="landing-eyebrow">Seu arquivo pode soar melhor</p>
             <h2 className="mx-auto mt-3 max-w-3xl text-3xl font-bold sm:text-5xl">Ouça a diferença no seu próprio áudio ou vídeo.</h2>
             <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground">Crie sua conta, envie uma faixa e teste todos os passos sem informar cartão.</p>
-            <Button size="lg" className="mt-7 h-12 px-7" asChild><Link to="/master">Começar com 1 faixa grátis <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
+            <Button size="lg" className="mt-7 h-12 px-7" asChild><Link to="/master" onClick={() => track("cta_click", { cta: "cta_final" })}>Começar com 1 faixa grátis <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
           </div>
         </section>
       </main>

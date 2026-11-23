@@ -18,6 +18,7 @@ import { formatClock } from "@/lib/recorder";
 import { consumeTrack, getAccount } from "@/lib/account.functions";
 import { Onboarding } from "@/components/Onboarding";
 import { isVideoFile } from "@/lib/media-playback";
+import { durationBucket, sizeBucket, track } from "@/lib/track";
 
 export const Route = createFileRoute("/master")({
   staticData: { sitemap: true },
@@ -84,6 +85,9 @@ function Master() {
   }, [needsAccount]);
 
   const blocked = account ? account.remaining <= 0 && !paid : false;
+  useEffect(() => {
+    if (blocked && account) track("paywall_shown", { plan_id: account.planId });
+  }, [blocked, account]);
 
   useEffect(() => {
     return () => {
@@ -132,6 +136,7 @@ function Master() {
     setFileName(file.name.replace(/\.[^.]+$/, ""));
     const video = isVideoFile(file);
     setIsVideo(video);
+    track("upload_start", { is_video: video, size: sizeBucket(file.size) });
     try {
       const ab = await file.arrayBuffer();
       const ctx = new OfflineAudioContext(2, 1, 48000);
@@ -145,8 +150,10 @@ function Master() {
       setBuffer(decoded);
       setMetrics(m);
       setStage("goal");
+      track("analysis_done", { duration: durationBucket(m.duration), channels: m.channels > 1 ? 2 : 1 });
     } catch {
       if (session !== sessionRef.current) return;
+      track("upload_error", { is_video: video, size: sizeBucket(file.size) });
       setError("Não conseguimos ler esse arquivo. Tente MP3, WAV, M4A, OGG, MP4 ou WebM.");
     } finally {
       if (session === sessionRef.current) setAnalyzing(false);
@@ -157,6 +164,7 @@ function Master() {
     operationRef.current += 1;
     setProcessing(false);
     setGoal(id);
+    track("goal_selected", { goal_id: id });
     if (metrics) {
       setDiagnosis(diagnose(metrics, goalById(id)));
       setMaster(null);
@@ -170,11 +178,13 @@ function Master() {
     const operation = ++operationRef.current;
     setProcessing(true);
     setError(null);
+    track("process_click", { goal_id: goal, intensity, focus });
     try {
       const result = await masterAudio(buffer, metrics, goal, focus, fileName, intensity);
       if (session !== sessionRef.current || operation !== operationRef.current) return;
       setMaster(result);
       setStage("result");
+      track("result_viewed", { goal_id: goal });
     } catch {
       if (session !== sessionRef.current || operation !== operationRef.current) return;
       setError("Falha ao processar o áudio. Tente novamente com um arquivo menor.");
@@ -185,7 +195,9 @@ function Master() {
 
   // Credit is spent once per imported source, right before its first download.
   const ensureDownload = async (): Promise<boolean> => {
+    track("download_click", { signed_in: Boolean(signedIn) });
     if (!signedIn) {
+      track("signup_wall_shown");
       setNeedsAccount(true);
       return false;
     }

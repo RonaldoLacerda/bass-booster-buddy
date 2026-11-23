@@ -14,6 +14,7 @@ import { PLANS, formatBRL } from "@/lib/plans";
 import { openPlanCheckout } from "@/lib/paddle";
 import { getPaddleEnvironment, PLAN_PRICE_IDS } from "@/lib/paddle-env";
 import { changePlan, getCustomerPortalUrl } from "@/utils/payments.functions";
+import { track } from "@/lib/track";
 
 export const Route = createFileRoute("/_authenticated/planos")({
   staticData: { sitemap: false },
@@ -42,8 +43,14 @@ function PlanosPage() {
   const [awaitingPayment, setAwaitingPayment] = useState(false);
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("checkout") === "success") setAwaitingPayment(true);
+    if (new URLSearchParams(window.location.search).get("checkout") === "success") {
+      track("payment_success");
+      setAwaitingPayment(true);
+    }
   }, []);
+  useEffect(() => {
+    if (account) track("plans_view", { plan_id: account.planId });
+  }, [account?.planId]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (awaitingPayment && account?.hasPaymentSubscription) {
       setAwaitingPayment(false);
@@ -65,9 +72,13 @@ function PlanosPage() {
   const mutation = useMutation({
     mutationFn: async (planId: string) => {
       if (!account || !PLAN_PRICE_IDS[planId]) throw new Error("Conta indisponível");
+      track("checkout_start", { plan_id: planId });
       await openPlanCheckout({ priceId: PLAN_PRICE_IDS[planId], userId: account.userId, email: account.email });
     },
-    onError: () => toast.error("Não foi possível abrir o pagamento. Tente novamente em instantes."),
+    onError: (_e, planId) => {
+      track("checkout_error", { plan_id: planId });
+      toast.error("Não foi possível abrir o pagamento. Tente novamente em instantes.");
+    },
   });
   const manage = useMutation({
     mutationFn: () => portal(),

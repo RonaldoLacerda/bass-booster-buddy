@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { track } from "@/lib/track";
 import { Loader2, Music } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -63,6 +64,10 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  useEffect(() => {
+    track("auth_view", { mode });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -73,8 +78,14 @@ function AuthPage() {
     setInfo(null);
 
     const emailError = validateEmail(email);
-    if (emailError) return setError(emailError);
-    if (password.length < 8) return setError("A senha precisa ter pelo menos 8 caracteres.");
+    if (emailError) {
+      if (mode === "signup") track("signup_error", { reason: "invalid_email" });
+      return setError(emailError);
+    }
+    if (password.length < 8) {
+      if (mode === "signup") track("signup_error", { reason: "weak_password" });
+      return setError("A senha precisa ter pelo menos 8 caracteres.");
+    }
 
     setBusy(true);
     try {
@@ -88,6 +99,7 @@ function AuthPage() {
           },
         });
         if (err) throw err;
+        track("signup_submit");
         setInfo(
           "Conta criada! Confirme o e-mail que enviamos para liberar o acesso — isso garante que o endereço é real.",
         );
@@ -101,6 +113,7 @@ function AuthPage() {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Falha na autenticação.";
+      if (mode === "signup") track("signup_error", { reason: message.includes("already registered") ? "exists" : "other" });
       setError(
         message.includes("Invalid login")
           ? "E-mail ou senha incorretos."
