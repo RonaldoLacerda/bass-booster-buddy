@@ -174,10 +174,10 @@ function Landing() {
               Agora para áudio e vídeo
             </p>
             <h1 className="mx-auto mt-6 max-w-5xl text-4xl font-extrabold leading-[1.08] sm:text-6xl lg:text-7xl">
-              Som profissional para seu <span className="landing-signal-text">áudio e vídeo</span>
+              Sua gravação de banda ou culto com <span className="landing-signal-text">mais volume e mais grave</span>
             </h1>
             <p className="mx-auto mt-6 max-w-3xl text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
-              Corrija volume baixo, falta de grave e pouca clareza. O AudioMix analisa, masteriza e permite comparar o
+              Gravou o ensaio, o culto ou um show pelo celular e o som ficou baixo e sem grave? O AudioMix analisa, masteriza e permite comparar o
               resultado antes de baixar — sem instalar nada e sem enviar seu arquivo para a nuvem.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
