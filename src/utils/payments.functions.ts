@@ -8,13 +8,11 @@ export const resolvePaddlePrice = createServerFn({ method: "GET" })
   }))
   .handler(async ({ data }) => {
     if (!Object.values(PLAN_PRICE_IDS).includes(data.priceId)) throw new Error("Invalid price");
-    const { gatewayFetch } = await import("@/lib/paddle.server");
+    const { findPaddlePriceId } = await import("@/lib/paddle.server");
     // The environment is decided on the server; the client value is ignored.
-    const response = await gatewayFetch(getPaddleEnvironment(), `/prices?external_id=${encodeURIComponent(data.priceId)}`);
-    if (!response.ok) throw new Error("Price unavailable");
-    const result = await response.json();
-    if (!result.data?.length) throw new Error("Price not found");
-    return result.data[0].id as string;
+    const priceId = await findPaddlePriceId(getPaddleEnvironment(), data.priceId);
+    if (!priceId) throw new Error("Price not found");
+    return priceId;
   });
 
 export const getCustomerPortalUrl = createServerFn({ method: "POST" })
@@ -62,12 +60,10 @@ export const changePlan = createServerFn({ method: "POST" })
     if (sub.paddle_status !== "active" && sub.paddle_status !== "trialing") {
       return { ok: false, message: "Regularize o pagamento em Gerenciar assinatura antes de trocar de plano." };
     }
-    const { gatewayFetch } = await import("@/lib/paddle.server");
-    const priceRes = await gatewayFetch(env, `/prices?external_id=${encodeURIComponent(priceExternalId)}`);
-    const priceJson = priceRes.ok ? await priceRes.json() : null;
-    const paddlePriceId = priceJson?.data?.[0]?.id as string | undefined;
+    const { findPaddlePriceId, paddleFetch } = await import("@/lib/paddle.server");
+    const paddlePriceId = await findPaddlePriceId(env, priceExternalId).catch(() => null);
     if (!paddlePriceId) return { ok: false, message: "Plano indisponível no momento." };
-    const res = await gatewayFetch(env, `/subscriptions/${encodeURIComponent(sub.paddle_subscription_id)}`, {
+    const res = await paddleFetch(env, `/subscriptions/${encodeURIComponent(sub.paddle_subscription_id)}`, {
       method: "PATCH",
       body: JSON.stringify({
         items: [{ price_id: paddlePriceId, quantity: 1 }],

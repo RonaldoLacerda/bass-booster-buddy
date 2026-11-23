@@ -40,3 +40,14 @@ Estes itens exigem a sua conta e não devem passar pelo chat:
 - projeto no Supabase;
 - chaves de API do Paddle e o novo destino de webhook;
 - acesso ao DNS ou à transferência do domínio.
+
+## Estado (branch `independencia-lovable`)
+
+Feito no código, ainda não publicado:
+- `vite.config.ts` explícito, sem o pacote do Lovable; pacote removido do `package.json` e do `bunfig.toml`.
+- Relato de erros e login do preview do Lovable removidos; textos sem menção ao Lovable.
+- `src/lib/paddle.server.ts` chama a API oficial do Paddle (`api.paddle.com` / `sandbox-api.paddle.com`) com `PADDLE_LIVE_API_KEY` e `PADDLE_SANDBOX_API_KEY`, que **precisam ser chaves criadas no Paddle**. O preço é achado pelo `import_meta.external_id`, listando os preços ativos.
+
+**Não faça merge desta branch na `main` antes de:** criar as chaves de API no Paddle, cadastrá-las como segredos no destino de publicação, e fazer uma compra completa em sandbox. Hoje as chaves guardadas no Lovable são chaves de conexão dele e não funcionam na API direta.
+
+Segredos removidos do código: `LOVABLE_API_KEY`, `LOVABLE_CRON_SECRET*` (agora `CRON_SECRET*`), `LOVABLE_DB_MIGRATION_URL` (agora `DATABASE_URL`).

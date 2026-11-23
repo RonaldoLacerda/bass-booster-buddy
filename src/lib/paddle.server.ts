@@ -10,36 +10,52 @@ export { EventName };
 
 export type PaddleEnv = "sandbox" | "live";
 
-const GATEWAY_BASE_URL = "https://connector-gateway.lovable.dev/paddle";
+const API_BASE_URL: Record<PaddleEnv, string> = {
+  live: "https://api.paddle.com",
+  sandbox: "https://sandbox-api.paddle.com",
+};
 
-export function getConnectionApiKey(env: PaddleEnv): string {
+/** Paddle API key created in the Paddle dashboard (Developer Tools > Authentication). */
+export function getApiKey(env: PaddleEnv): string {
   return env === "sandbox" ? getEnv("PADDLE_SANDBOX_API_KEY") : getEnv("PADDLE_LIVE_API_KEY");
 }
 
 export function getPaddleClient(env: PaddleEnv): Paddle {
-  const connectionApiKey = getConnectionApiKey(env);
-  const lovableApiKey = getEnv("LOVABLE_API_KEY");
-  return new Paddle(connectionApiKey, {
-    environment: GATEWAY_BASE_URL as unknown as Environment,
-    customHeaders: {
-      "X-Connection-Api-Key": connectionApiKey,
-      "Lovable-API-Key": lovableApiKey,
+  return new Paddle(getApiKey(env), {
+    environment: env === "sandbox" ? Environment.sandbox : Environment.production,
+  });
+}
+
+export async function paddleFetch(env: PaddleEnv, path: string, init?: RequestInit): Promise<Response> {
+  return fetch(`${API_BASE_URL[env]}${path}`, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getApiKey(env)}`,
+      ...init?.headers,
     },
   });
 }
 
-export async function gatewayFetch(env: PaddleEnv, path: string, init?: RequestInit): Promise<Response> {
-  const connectionApiKey = getConnectionApiKey(env);
-  const lovableApiKey = getEnv("LOVABLE_API_KEY");
-  return fetch(`${GATEWAY_BASE_URL}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      "X-Connection-Api-Key": connectionApiKey,
-      "Lovable-API-Key": lovableApiKey,
-      ...init?.headers,
-    },
-  });
+/**
+ * Resolve our stable price id (import_meta.external_id, e.g. "essencial_monthly")
+ * to the Paddle price id. The Paddle API cannot filter by external id, so list and match.
+ */
+export async function findPaddlePriceId(env: PaddleEnv, externalId: string): Promise<string | null> {
+  let path: string | null = "/prices?status=active&per_page=200";
+  for (let page = 0; path && page < 10; page++) {
+    const response = await paddleFetch(env, path);
+    if (!response.ok) throw new Error(`Paddle prices request failed (${response.status})`);
+    const body = (await response.json()) as {
+      data?: Array<{ id: string; import_meta?: { external_id?: string | null } | null }>;
+      meta?: { pagination?: { has_more?: boolean; next?: string } };
+    };
+    const match = body.data?.find((price) => price.import_meta?.external_id === externalId);
+    if (match) return match.id;
+    const next = body.meta?.pagination;
+    path = next?.has_more && next.next ? next.next.replace(API_BASE_URL[env], "") : null;
+  }
+  return null;
 }
 
 export function getWebhookSecret(env: PaddleEnv): string {

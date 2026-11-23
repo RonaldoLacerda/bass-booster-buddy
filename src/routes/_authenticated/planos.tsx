@@ -83,7 +83,7 @@ function PlanosPage() {
       <AppNav />
       {getPaddleEnvironment() === "sandbox" && (
         <div className="border-b border-accent/30 bg-accent/10 px-4 py-2 text-center text-sm text-foreground">
-          Pagamentos em modo de teste — nenhuma cobrança real. <a className="underline" href="https://docs.lovable.dev/features/payments#test-and-live-environments" target="_blank" rel="noopener noreferrer">Saiba mais</a>
+          Pagamentos em modo de teste — nenhuma cobrança real.
         </div>
       )}
       <Toaster />
