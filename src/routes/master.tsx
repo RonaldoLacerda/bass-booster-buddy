@@ -20,10 +20,10 @@ import { Onboarding } from "@/components/Onboarding";
 import { isVideoFile } from "@/lib/media-playback";
 
 export const Route = createFileRoute("/master")({
-  staticData: { sitemap: false },
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
-      { title: "Masterizar áudio | AudioMix" },
+      { title: "Masterizar áudio online grátis | AudioMix" },
       {
         name: "description",
         content:
@@ -36,8 +36,10 @@ export const Route = createFileRoute("/master")({
           "Diagnóstico automático e masterização de qualquer gravação — volume, graves e clareza corrigidos em segundos.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://audiomix.app/master" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://audiomix.app/master" }],
   }),
   component: Master,
 });
