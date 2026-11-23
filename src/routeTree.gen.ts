@@ -20,6 +20,14 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as AuthenticatedPlanosRouteImport } from './routes/_authenticated/planos'
 import { Route as AuthenticatedStudioRouteImport } from './routes/_authenticated/studio'
+import { Route as FerramentasIndexRouteImport } from './routes/ferramentas.index'
+import { Route as FerramentasAudioWhatsappRouteImport } from './routes/ferramentas.audio-whatsapp'
+import { Route as FerramentasAumentarGravesAudioRouteImport } from './routes/ferramentas.aumentar-graves-audio'
+import { Route as FerramentasAumentarVolumeAudioRouteImport } from './routes/ferramentas.aumentar-volume-audio'
+import { Route as FerramentasMasterizarMusicaOnlineRouteImport } from './routes/ferramentas.masterizar-musica-online'
+import { Route as FerramentasMelhorarAudioPodcastRouteImport } from './routes/ferramentas.melhorar-audio-podcast'
+import { Route as FerramentasMelhorarAudioVideoRouteImport } from './routes/ferramentas.melhorar-audio-video'
+import { Route as FerramentasNormalizarAudioLufsRouteImport } from './routes/ferramentas.normalizar-audio-lufs'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const IndexRoute = IndexRouteImport.update({
@@ -76,6 +84,53 @@ const AuthenticatedStudioRoute = AuthenticatedStudioRouteImport.update({
   path: '/studio',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const FerramentasIndexRoute = FerramentasIndexRouteImport.update({
+  id: '/ferramentas/',
+  path: '/ferramentas/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FerramentasAudioWhatsappRoute =
+  FerramentasAudioWhatsappRouteImport.update({
+    id: '/ferramentas/audio-whatsapp',
+    path: '/ferramentas/audio-whatsapp',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const FerramentasAumentarGravesAudioRoute =
+  FerramentasAumentarGravesAudioRouteImport.update({
+    id: '/ferramentas/aumentar-graves-audio',
+    path: '/ferramentas/aumentar-graves-audio',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const FerramentasAumentarVolumeAudioRoute =
+  FerramentasAumentarVolumeAudioRouteImport.update({
+    id: '/ferramentas/aumentar-volume-audio',
+    path: '/ferramentas/aumentar-volume-audio',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const FerramentasMasterizarMusicaOnlineRoute =
+  FerramentasMasterizarMusicaOnlineRouteImport.update({
+    id: '/ferramentas/masterizar-musica-online',
+    path: '/ferramentas/masterizar-musica-online',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const FerramentasMelhorarAudioPodcastRoute =
+  FerramentasMelhorarAudioPodcastRouteImport.update({
+    id: '/ferramentas/melhorar-audio-podcast',
+    path: '/ferramentas/melhorar-audio-podcast',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const FerramentasMelhorarAudioVideoRoute =
+  FerramentasMelhorarAudioVideoRouteImport.update({
+    id: '/ferramentas/melhorar-audio-video',
+    path: '/ferramentas/melhorar-audio-video',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const FerramentasNormalizarAudioLufsRoute =
+  FerramentasNormalizarAudioLufsRouteImport.update({
+    id: '/ferramentas/normalizar-audio-lufs',
+    path: '/ferramentas/normalizar-audio-lufs',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -94,6 +149,14 @@ export interface FileRoutesByFullPath {
   '/termos': typeof TermosRoute
   '/planos': typeof AuthenticatedPlanosRoute
   '/studio': typeof AuthenticatedStudioRoute
+  '/ferramentas/audio-whatsapp': typeof FerramentasAudioWhatsappRoute
+  '/ferramentas/aumentar-graves-audio': typeof FerramentasAumentarGravesAudioRoute
+  '/ferramentas/aumentar-volume-audio': typeof FerramentasAumentarVolumeAudioRoute
+  '/ferramentas/masterizar-musica-online': typeof FerramentasMasterizarMusicaOnlineRoute
+  '/ferramentas/melhorar-audio-podcast': typeof FerramentasMelhorarAudioPodcastRoute
+  '/ferramentas/melhorar-audio-video': typeof FerramentasMelhorarAudioVideoRoute
+  '/ferramentas/normalizar-audio-lufs': typeof FerramentasNormalizarAudioLufsRoute
+  '/ferramentas/': typeof FerramentasIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -107,6 +170,14 @@ export interface FileRoutesByTo {
   '/termos': typeof TermosRoute
   '/planos': typeof AuthenticatedPlanosRoute
   '/studio': typeof AuthenticatedStudioRoute
+  '/ferramentas/audio-whatsapp': typeof FerramentasAudioWhatsappRoute
+  '/ferramentas/aumentar-graves-audio': typeof FerramentasAumentarGravesAudioRoute
+  '/ferramentas/aumentar-volume-audio': typeof FerramentasAumentarVolumeAudioRoute
+  '/ferramentas/masterizar-musica-online': typeof FerramentasMasterizarMusicaOnlineRoute
+  '/ferramentas/melhorar-audio-podcast': typeof FerramentasMelhorarAudioPodcastRoute
+  '/ferramentas/melhorar-audio-video': typeof FerramentasMelhorarAudioVideoRoute
+  '/ferramentas/normalizar-audio-lufs': typeof FerramentasNormalizarAudioLufsRoute
+  '/ferramentas': typeof FerramentasIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
@@ -122,6 +193,14 @@ export interface FileRoutesById {
   '/termos': typeof TermosRoute
   '/_authenticated/planos': typeof AuthenticatedPlanosRoute
   '/_authenticated/studio': typeof AuthenticatedStudioRoute
+  '/ferramentas/audio-whatsapp': typeof FerramentasAudioWhatsappRoute
+  '/ferramentas/aumentar-graves-audio': typeof FerramentasAumentarGravesAudioRoute
+  '/ferramentas/aumentar-volume-audio': typeof FerramentasAumentarVolumeAudioRoute
+  '/ferramentas/masterizar-musica-online': typeof FerramentasMasterizarMusicaOnlineRoute
+  '/ferramentas/melhorar-audio-podcast': typeof FerramentasMelhorarAudioPodcastRoute
+  '/ferramentas/melhorar-audio-video': typeof FerramentasMelhorarAudioVideoRoute
+  '/ferramentas/normalizar-audio-lufs': typeof FerramentasNormalizarAudioLufsRoute
+  '/ferramentas/': typeof FerramentasIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
@@ -137,6 +216,14 @@ export interface FileRouteTypes {
     | '/termos'
     | '/planos'
     | '/studio'
+    | '/ferramentas/audio-whatsapp'
+    | '/ferramentas/aumentar-graves-audio'
+    | '/ferramentas/aumentar-volume-audio'
+    | '/ferramentas/masterizar-musica-online'
+    | '/ferramentas/melhorar-audio-podcast'
+    | '/ferramentas/melhorar-audio-video'
+    | '/ferramentas/normalizar-audio-lufs'
+    | '/ferramentas/'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -150,6 +237,14 @@ export interface FileRouteTypes {
     | '/termos'
     | '/planos'
     | '/studio'
+    | '/ferramentas/audio-whatsapp'
+    | '/ferramentas/aumentar-graves-audio'
+    | '/ferramentas/aumentar-volume-audio'
+    | '/ferramentas/masterizar-musica-online'
+    | '/ferramentas/melhorar-audio-podcast'
+    | '/ferramentas/melhorar-audio-video'
+    | '/ferramentas/normalizar-audio-lufs'
+    | '/ferramentas'
     | '/api/public/payments/webhook'
   id:
     | '__root__'
@@ -164,6 +259,14 @@ export interface FileRouteTypes {
     | '/termos'
     | '/_authenticated/planos'
     | '/_authenticated/studio'
+    | '/ferramentas/audio-whatsapp'
+    | '/ferramentas/aumentar-graves-audio'
+    | '/ferramentas/aumentar-volume-audio'
+    | '/ferramentas/masterizar-musica-online'
+    | '/ferramentas/melhorar-audio-podcast'
+    | '/ferramentas/melhorar-audio-video'
+    | '/ferramentas/normalizar-audio-lufs'
+    | '/ferramentas/'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -177,6 +280,14 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermosRoute: typeof TermosRoute
+  FerramentasAudioWhatsappRoute: typeof FerramentasAudioWhatsappRoute
+  FerramentasAumentarGravesAudioRoute: typeof FerramentasAumentarGravesAudioRoute
+  FerramentasAumentarVolumeAudioRoute: typeof FerramentasAumentarVolumeAudioRoute
+  FerramentasMasterizarMusicaOnlineRoute: typeof FerramentasMasterizarMusicaOnlineRoute
+  FerramentasMelhorarAudioPodcastRoute: typeof FerramentasMelhorarAudioPodcastRoute
+  FerramentasMelhorarAudioVideoRoute: typeof FerramentasMelhorarAudioVideoRoute
+  FerramentasNormalizarAudioLufsRoute: typeof FerramentasNormalizarAudioLufsRoute
+  FerramentasIndexRoute: typeof FerramentasIndexRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
@@ -259,6 +370,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudioRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/ferramentas/': {
+      id: '/ferramentas/'
+      path: '/ferramentas'
+      fullPath: '/ferramentas/'
+      preLoaderRoute: typeof FerramentasIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ferramentas/audio-whatsapp': {
+      id: '/ferramentas/audio-whatsapp'
+      path: '/ferramentas/audio-whatsapp'
+      fullPath: '/ferramentas/audio-whatsapp'
+      preLoaderRoute: typeof FerramentasAudioWhatsappRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ferramentas/aumentar-graves-audio': {
+      id: '/ferramentas/aumentar-graves-audio'
+      path: '/ferramentas/aumentar-graves-audio'
+      fullPath: '/ferramentas/aumentar-graves-audio'
+      preLoaderRoute: typeof FerramentasAumentarGravesAudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ferramentas/aumentar-volume-audio': {
+      id: '/ferramentas/aumentar-volume-audio'
+      path: '/ferramentas/aumentar-volume-audio'
+      fullPath: '/ferramentas/aumentar-volume-audio'
+      preLoaderRoute: typeof FerramentasAumentarVolumeAudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ferramentas/masterizar-musica-online': {
+      id: '/ferramentas/masterizar-musica-online'
+      path: '/ferramentas/masterizar-musica-online'
+      fullPath: '/ferramentas/masterizar-musica-online'
+      preLoaderRoute: typeof FerramentasMasterizarMusicaOnlineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ferramentas/melhorar-audio-podcast': {
+      id: '/ferramentas/melhorar-audio-podcast'
+      path: '/ferramentas/melhorar-audio-podcast'
+      fullPath: '/ferramentas/melhorar-audio-podcast'
+      preLoaderRoute: typeof FerramentasMelhorarAudioPodcastRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ferramentas/melhorar-audio-video': {
+      id: '/ferramentas/melhorar-audio-video'
+      path: '/ferramentas/melhorar-audio-video'
+      fullPath: '/ferramentas/melhorar-audio-video'
+      preLoaderRoute: typeof FerramentasMelhorarAudioVideoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ferramentas/normalizar-audio-lufs': {
+      id: '/ferramentas/normalizar-audio-lufs'
+      path: '/ferramentas/normalizar-audio-lufs'
+      fullPath: '/ferramentas/normalizar-audio-lufs'
+      preLoaderRoute: typeof FerramentasNormalizarAudioLufsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -292,6 +459,15 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermosRoute: TermosRoute,
+  FerramentasAudioWhatsappRoute: FerramentasAudioWhatsappRoute,
+  FerramentasAumentarGravesAudioRoute: FerramentasAumentarGravesAudioRoute,
+  FerramentasAumentarVolumeAudioRoute: FerramentasAumentarVolumeAudioRoute,
+  FerramentasMasterizarMusicaOnlineRoute:
+    FerramentasMasterizarMusicaOnlineRoute,
+  FerramentasMelhorarAudioPodcastRoute: FerramentasMelhorarAudioPodcastRoute,
+  FerramentasMelhorarAudioVideoRoute: FerramentasMelhorarAudioVideoRoute,
+  FerramentasNormalizarAudioLufsRoute: FerramentasNormalizarAudioLufsRoute,
+  FerramentasIndexRoute: FerramentasIndexRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport

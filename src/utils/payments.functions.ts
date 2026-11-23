@@ -3,14 +3,14 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { getPaddleEnvironment, PLAN_PRICE_IDS } from "@/lib/paddle-env";
 
 export const resolvePaddlePrice = createServerFn({ method: "GET" })
-  .inputValidator((data: { priceId: string; environment: "sandbox" | "live" }) => ({
+  .inputValidator((data: { priceId: string; environment?: string }) => ({
     priceId: String(data?.priceId ?? "").replace(/[^a-z0-9_]/gi, "").slice(0, 60),
-    environment: data?.environment === "live" ? ("live" as const) : ("sandbox" as const),
   }))
   .handler(async ({ data }) => {
     if (!Object.values(PLAN_PRICE_IDS).includes(data.priceId)) throw new Error("Invalid price");
     const { gatewayFetch } = await import("@/lib/paddle.server");
-    const response = await gatewayFetch(data.environment, `/prices?external_id=${encodeURIComponent(data.priceId)}`);
+    // The environment is decided on the server; the client value is ignored.
+    const response = await gatewayFetch(getPaddleEnvironment(), `/prices?external_id=${encodeURIComponent(data.priceId)}`);
     if (!response.ok) throw new Error("Price unavailable");
     const result = await response.json();
     if (!result.data?.length) throw new Error("Price not found");

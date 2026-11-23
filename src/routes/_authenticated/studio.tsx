@@ -127,7 +127,7 @@ function Index() {
       toast.error("Seu limite de faixas acabou. Escolha um plano para continuar.");
       return false;
     }
-    const res = await spendTrack({ data: { fileName, goalId: "studio" } });
+    const res = await spendTrack({ data: { fileName: "", goalId: "studio" } });
     void refetchAccount();
     if (!res.ok) {
       toast.error(res.reason ?? "Limite de faixas atingido.");

@@ -25,6 +25,7 @@ import { ProductPreview } from "@/components/landing/ProductPreview";
 import { PolicyLinks } from "@/components/LegalPage";
 import { Button } from "@/components/ui/button";
 import { FREE_TRACKS, PLANS, formatBRL } from "@/lib/plans";
+import { SEO_PAGES } from "@/lib/seo-pages";
 
 const TITLE = "AudioMix — masterize áudio e vídeo direto no navegador";
 const DESCRIPTION =
@@ -115,7 +116,7 @@ const STEPS = [
 const FAQ = [
   {
     q: "O AudioMix aceita vídeo?",
-    a: "Sim. Você pode enviar MP4, WebM e outros vídeos compatíveis com o navegador, melhorar a trilha de áudio e baixar o vídeo em WebM mantendo a imagem original.",
+    a: "Sim. Você pode enviar MP4, WebM e outros vídeos compatíveis com o navegador, melhorar a trilha de áudio e baixar o vídeo em MP4 ou WebM (conforme o arquivo original) mantendo a imagem original.",
   },
   {
     q: "Meu arquivo é enviado para a internet?",
@@ -131,7 +132,7 @@ const FAQ = [
   },
   {
     q: "Quais formatos de áudio posso baixar?",
-    a: "Você pode exportar WAV sem perdas ou MP3 em 128, 192, 256 e 320 kbps. Vídeos tratados são exportados em WebM.",
+    a: "Você pode exportar WAV sem perdas ou MP3 em 128, 192, 256 e 320 kbps. Vídeos tratados são exportados em MP4 ou WebM, conforme o arquivo original.",
   },
   {
     q: "Como funciona o teste grátis?",
@@ -151,6 +152,7 @@ function Landing() {
             <a href="#recursos" className="transition-colors hover:text-foreground">Recursos</a>
             <a href="#como-funciona" className="transition-colors hover:text-foreground">Como funciona</a>
             <a href="#planos" className="transition-colors hover:text-foreground">Planos</a>
+            <Link to="/ferramentas" className="transition-colors hover:text-foreground">Ferramentas</Link>
           </nav>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" asChild>
@@ -172,10 +174,10 @@ function Landing() {
               Agora para áudio e vídeo
             </p>
             <h1 className="mx-auto mt-6 max-w-5xl text-4xl font-extrabold leading-[1.08] sm:text-6xl lg:text-7xl">
-              Som profissional para seu <span className="landing-signal-text">áudio e vídeo</span>
+              Sua gravação de banda ou culto com <span className="landing-signal-text">mais volume e mais grave</span>
             </h1>
             <p className="mx-auto mt-6 max-w-3xl text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
-              Corrija volume baixo, falta de grave e pouca clareza. O AudioMix analisa, masteriza e permite comparar o
+              Gravou o ensaio, o culto ou um show pelo celular e o som ficou baixo e sem grave? O AudioMix analisa, masteriza e permite comparar o
               resultado antes de baixar — sem instalar nada e sem enviar seu arquivo para a nuvem.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
@@ -240,8 +242,8 @@ function Landing() {
               <article className="landing-bento p-6 lg:col-span-5">
                 <span className="landing-icon"><Video className="h-5 w-5" /></span>
                 <h3 className="mt-5 text-xl font-bold">Vídeo com áudio melhorado</h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">O AudioMix mantém a imagem original e cria uma nova versão em WebM com a trilha sonora tratada.</p>
-                <div className="mt-5 flex items-center gap-2 text-xs text-primary"><Film className="h-4 w-4" /> MP4 ou WebM → WebM tratado</div>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">O AudioMix mantém a imagem original e cria uma nova versão em MP4 ou WebM com a trilha sonora tratada.</p>
+                <div className="mt-5 flex items-center gap-2 text-xs text-primary"><Film className="h-4 w-4" /> MP4 ou WebM com áudio tratado</div>
               </article>
 
               <article className="landing-bento p-6 lg:col-span-5">
@@ -332,7 +334,7 @@ function Landing() {
                     {plan.perks.map((perk) => <li key={perk} className="flex gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span className="text-muted-foreground">{perk}</span></li>)}
                     <li className="flex gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span className="text-muted-foreground">Áudio e vídeo</span></li>
                   </ul>
-                  <Button className="mt-7 w-full" variant={plan.highlight ? "default" : "outline"} asChild><Link to="/auth">Escolher {plan.name}</Link></Button>
+                  <Button className="mt-7 w-full" variant={plan.highlight ? "default" : "outline"} asChild><Link to="/auth" search={{ mode: "signup" }}>Escolher {plan.name}</Link></Button>
                 </article>
               ))}
             </div>
@@ -372,6 +374,11 @@ function Landing() {
           <p>Áudio e vídeo processados no seu aparelho · {new Date().getFullYear()}</p>
           <PolicyLinks />
         </div>
+        <nav aria-label="Guias" className="mx-auto mt-6 flex max-w-7xl flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
+          {SEO_PAGES.map((p) => (
+            <a key={p.slug} href={p.path} className="underline underline-offset-4">{p.h1}</a>
+          ))}
+        </nav>
       </footer>
     </div>
   );

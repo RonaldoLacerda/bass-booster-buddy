@@ -26,7 +26,12 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
           const event = await verifyWebhook(request, env);
           switch (event.eventType) {
             case EventName.SubscriptionCreated:
+            case EventName.SubscriptionActivated:
+            case EventName.SubscriptionTrialing:
             case EventName.SubscriptionUpdated:
+            case EventName.SubscriptionPastDue:
+            case EventName.SubscriptionPaused:
+            case EventName.SubscriptionResumed:
             case EventName.SubscriptionCanceled:
               await upsertSubscription(event.data, env, event.occurredAt);
               break;

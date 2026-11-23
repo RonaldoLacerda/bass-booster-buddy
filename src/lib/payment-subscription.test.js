@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { PLANS, FREE_TRACKS } from "./plans";
 import { subscriptionRecord } from "./payment-subscription";
+import { paddleEnvironmentFromToken } from "./paddle-env";
 
 const event = (id = "essencial") => ({
   id: "sub_test", customerId: "ctm_test", status: "active", createdAt: "2026-01-01T00:00:00Z",
@@ -34,5 +35,14 @@ describe("AudioMix payment rules", () => {
   test("renewal moves the quota period start to the new billing period", () => {
     const renewed = { ...event(), currentBillingPeriod: { startsAt: "2026-02-01T00:00:00Z", endsAt: "2099-03-01T00:00:00Z" } };
     expect(subscriptionRecord(renewed, "live", "2026-02-01T00:00:00Z").started_at).toBe("2026-02-01T00:00:00Z");
+  });
+  test("environment follows the token prefix and fails closed", () => {
+    expect(paddleEnvironmentFromToken("test_abc")).toBe("sandbox");
+    expect(paddleEnvironmentFromToken("live_abc")).toBe("live");
+    expect(() => paddleEnvironmentFromToken("abc")).toThrow();
+    expect(() => paddleEnvironmentFromToken(undefined)).toThrow();
+  });
+  test("paused subscriptions do not keep access", () => {
+    expect(subscriptionRecord({ ...event(), status: "paused" }, "live", "2026-01-01T00:00:00Z").status).toBe("inactive");
   });
 });
