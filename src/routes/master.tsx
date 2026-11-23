@@ -79,6 +79,10 @@ function Master() {
   const sessionRef = useRef(0);
   const operationRef = useRef(0);
 
+  useEffect(() => {
+    if (needsAccount) document.getElementById("signup-wall")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [needsAccount]);
+
   const blocked = account ? account.remaining <= 0 && !paid : false;
 
   useEffect(() => {
@@ -187,7 +191,7 @@ function Master() {
     }
     if (paid) return true;
     const session = sessionRef.current;
-    const credit = await spendTrack({ data: { fileName, goalId: goal ?? "" } });
+    const credit = await spendTrack({ data: { fileName: "", goalId: goal ?? "" } });
     void queryClient.invalidateQueries({ queryKey: ["account"] });
     if (session !== sessionRef.current) return false;
     if (!credit.ok) {
@@ -452,13 +456,13 @@ function Master() {
             />
 
             {needsAccount && (
-              <section role="alert" className="panel flex flex-col items-start gap-3 border border-accent/50 p-4 sm:p-5">
+              <section id="signup-wall" role="alert" className="panel flex flex-col items-start gap-3 border border-accent/50 p-4 sm:p-5">
                 <h2 className="text-lg font-semibold">Gostou do resultado? Crie sua conta grátis para baixar</h2>
                 <p className="text-sm text-muted-foreground">
                   A primeira faixa é grátis, sem cartão. Depois de entrar, envie o arquivo de novo — tudo continua sendo processado no seu aparelho.
                 </p>
                 <Button className="w-full sm:w-auto" asChild>
-                  <Link to="/auth">Criar conta grátis</Link>
+                  <Link to="/auth" search={{ mode: "signup" }}>Criar conta grátis</Link>
                 </Button>
               </section>
             )}

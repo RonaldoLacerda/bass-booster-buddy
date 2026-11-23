@@ -334,7 +334,7 @@ function Landing() {
                     {plan.perks.map((perk) => <li key={perk} className="flex gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span className="text-muted-foreground">{perk}</span></li>)}
                     <li className="flex gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span className="text-muted-foreground">Áudio e vídeo</span></li>
                   </ul>
-                  <Button className="mt-7 w-full" variant={plan.highlight ? "default" : "outline"} asChild><Link to="/auth">Escolher {plan.name}</Link></Button>
+                  <Button className="mt-7 w-full" variant={plan.highlight ? "default" : "outline"} asChild><Link to="/auth" search={{ mode: "signup" }}>Escolher {plan.name}</Link></Button>
                 </article>
               ))}
             </div>
